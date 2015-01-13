@@ -110,3 +110,66 @@ function gotRemoteIceCandidate(event){
 
 function handleError(){}
 
+/*
+var PeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+var IceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
+var SessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
+navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+
+var pc = new PeerConnection();
+pc.onicecandidate = function (e) {
+    alert(e);
+}
+
+// Helper functions
+function endCall() {
+  var videos = document.getElementsByTagName("video");
+  for (var i = 0; i < videos.length; i++) {
+    videos[i].pause();
+  }
+
+  pc.close();
+}
+
+function error(err) { endCall(); }
+
+var pcL = new PeerConnection();
+
+
+
+if(navigator.getUserMedia) {
+    navigator.getUserMedia({video: true, audio: true, toString : function() {
+      return "video,audio";
+    }
+                              }, onSuccess, onError);
+    
+}
+else {
+    alert("No getUserMedia!");
+}
+
+
+function onSuccess(stream) {
+    var video = document.querySelector('video');
+    video.autoplay = true;
+    video.src = window.URL.createObjectURL(stream);
+    pcL.addStream(stream);
+    pcL.createOffer(function(offer) {
+        pcL.setLocalDescription(new SessionDescription(offer), function() {
+            
+            pc.setRemoteDescription(new SessionDescription(offer), function() {
+                pc.createAnswer(function(answer) {
+                    pc.setLocalDescription(new SessionDescription(answer), function() {
+                        pcL.setRemoteDescription(new SessionDescription(answer), function() { }, error);
+                    }, error);
+                }, error);
+            }, error);
+        }, error);
+    }, error);
+
+}
+
+function onError() {
+    alert("Hey - no video ey!");
+}
+*/
