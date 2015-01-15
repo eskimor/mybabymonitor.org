@@ -57,7 +57,6 @@ $(document).ready(
                        logEvent("Posted ICE candidate ( " + data + "): " + status);
                    }
                   )
-            peerConnection.onicecandidate = null; // One is enough for our use case.
         }
         function gotDescription(description) {
             logEvent("Got local description: " + JSON.stringify(description));
