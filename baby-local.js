@@ -18,13 +18,18 @@ startButton.onclick = start;
 callButton.onclick = call;
 hangupButton.onclick = hangup;
 
+function serParse(val) {
+    JSON.parse(JSON.stringify(val));
+}
+
 function trace(text) {
   console.log((performance.now() / 1000).toFixed(3) + ": " + text);
 }
 
 function gotStream(stream){
   trace("Received local stream");
-  localVideo.src = URL.createObjectURL(stream);
+  //localVideo.src = URL.createObjectURL(stream);
+    $('#localVideo').attr('src', URL.createObjectURL(stream));
   localStream = stream;
   callButton.disabled = false;
 }
@@ -66,17 +71,18 @@ function call() {
   localPeerConnection.createOffer(gotLocalDescription,handleError);
 }
 
+
 function gotLocalDescription(description){
-  localPeerConnection.setLocalDescription(description);
-  trace("Offer from localPeerConnection: \n" + description.sdp);
-  remotePeerConnection.setRemoteDescription(description);
-  remotePeerConnection.createAnswer(gotRemoteDescription,handleError);
+    localPeerConnection.setLocalDescription(description);
+    trace("Offer from localPeerConnection: \n" + description.sdp);
+    remotePeerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(JSON.stringify(description))));
+    remotePeerConnection.createAnswer(gotRemoteDescription,handleError);
 }
 
 function gotRemoteDescription(description){
   remotePeerConnection.setLocalDescription(description);
-  trace("Answer from remotePeerConnection: \n" + description.sdp);
-  localPeerConnection.setRemoteDescription(description);
+    trace("Answer from remotePeerConnection: \n" + serParse(description.sdp));
+    localPeerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(JSON.stringify(description))));
 }
 
 function hangup() {
@@ -96,15 +102,15 @@ function gotRemoteStream(event){
 
 function gotLocalIceCandidate(event){
   if (event.candidate) {
-    remotePeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate));
+      remotePeerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(JSON.stringify(event.candidate))));
     trace("Local ICE candidate: \n" + event.candidate.candidate);
   }
 }
 
 function gotRemoteIceCandidate(event){
   if (event.candidate) {
-    localPeerConnection.addIceCandidate(new RTCIceCandidate(event.candidate));
-    trace("Remote ICE candidate: \n " + event.candidate.candidate);
+      localPeerConnection.addIceCandidate(new RTCIceCandidate(JSON.parse(JSON.stringify(event.candidate))));
+      trace("Remote ICE candidate: \n " + event.candidate.candidate);
   }
 }
 
