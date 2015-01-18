@@ -2,6 +2,8 @@ var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConne
 var RTCIceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
 var RTCSessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
 navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
 
 
 function logEvent(t) {
@@ -11,6 +13,10 @@ function logEvent(t) {
 
 $(document).ready(
     function(){
+       //  Set up volume:
+        var ctx = new window.AudioContext();
+        
+        
         logEvent("Document loaded.");
         var servers = null;
         peerConnection = new RTCPeerConnection(servers);
@@ -44,7 +50,12 @@ $(document).ready(
              )
         function gotStream(event){
             logEvent("Received remote stream! JUHU! (" + event.stream.id + ")");
-            $("#remoteVideo").attr('src', URL.createObjectURL(event.stream));
+            var source = ctx.createMediaStreamSource(event.stream);
+            var gainNode = ctx.createGain();
+            gainNode.gain.value = 10;
+            source.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            $("#remoteVideo").attr('src', URL.createObjectURL(ctx.destination));
         }
         function gotIceCandidate(event){
             logEvent("Got ICE candidate: \n" + JSON.stringify(event.candidate) + "typeof(event): " + typeof(event));
