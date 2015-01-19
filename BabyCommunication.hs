@@ -80,6 +80,17 @@ popBabyConnection bConnections@(BabyConnections connections) addr name =
     babies = getBabies bConnections addr
     connection = lookup name babies
     babies' = filter (((/=) name) . fst) babies
-    connections' = M.update (\_ -> case babies' of
+    connections' = updateMap m addr babies' 
+
+
+dropBabyConnection :: BabyConnections -> SockAddr -> Baby -> BabyConnections
+dropBabyConnection bConnections@(BabyConnections connections) addr baby =
+    BabyConnections connections'
+    where
+      babies' = filter ((/=) baby) (getBabies bConnections addr)
+      connections' = updateMap connections addr babies'
+
+updateMap :: M.Map SockAddr ([Baby]) -> SockAddr -> [Baby] -> M.Map SockAddr ([Baby])
+updateMap m addr babies = M.update (\_ -> case babies of
                                        [] -> Nothing
-                                       _ -> Just babies') addr connections
+                                       _ -> Just babies) addr m

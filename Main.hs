@@ -20,6 +20,7 @@ import Yesod.WebSockets
 import qualified Network.WebSockets as WS
 import Control.Concurrent.STM.TVar
 import Data.Aeson
+import Control.Exception.Base (finally)
 
 import BabyCommunication
 
@@ -72,17 +73,21 @@ getBabiesR = do
 babyWaiting :: BabyName -> WebSocketsT Handler ()
 babyWaiting name = do
   y <- lift getYesod
-  connections <- liftIO . atomically $ babyConnections y
   addr <- lift getClientAddress
-  let babies = getBabies connections addr
-  (input, output) <- atomically $ (,) <$> newTQueue <*> newTQueue
-  let newConnections =
-                   M.insertWith -- Replace any old connection
-                        (\new old -> new ++ filter ((/= name).fst) old)
-                        addr
-                        [(name, (input, output))]
-                        connections
-  liftIO . atomically $ writeTVar (babyConnections y) newConnections
+  atomically $ do
+    connections <-  readTVar $ babyConnections y
+    (connection, connections') <- newBaby connections addr name
+    putTVar (babyConnections y) $ connections'
+  race_
+                   (forever $ finally writer updateConnections)
+                   (forever $ finally reader updateConnections)
+    where
+      writer = atomically . babySend connection <$> receiveData
+      reader = atomically . babyReceive connection >>= sendTextData 
+      updateConnections = atomically $ do
+        old <- readTVar $ babyConnections y
+        let (_, new) = popBabyConnection old addr name
+        writeTVar (babyConnections y) new
 
 connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do
