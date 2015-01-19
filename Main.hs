@@ -15,12 +15,13 @@ import qualified Data.Conduit.Text as CT
 import qualified Data.Conduit as C
 import Data.Conduit (($$), (=$))
 import Control.Applicative ((<$>),(<*>))
-import qualified Data.Map.Strict as M
 import Network.Socket (SockAddr)
 import Yesod.WebSockets
 import qualified Network.WebSockets as WS
 import Control.Concurrent.STM.TVar
 import Data.Aeson
+
+import BabyCommunication
 
 
 
@@ -39,11 +40,6 @@ instance Yesod BabyPhone
 instance RenderMessage BabyPhone FormMessage where
     renderMessage _ _ = defaultFormMessage
 
-type BabyName = T.Text
-type BabySocket = WS.Connection
-
-type Baby = (BabyName, BabySocket)
-type BabyConnections = M.Map SockAddr ([Baby])
 
 data BabyPhone = BabyPhone {
       babyConnections :: TVar BabyConnections
@@ -79,12 +75,12 @@ babyWaiting name = do
   connections <- liftIO . atomically $ babyConnections y
   addr <- lift getClientAddress
   let babies = getBabies connections addr
-  conn <- ask 
+  (input, output) <- atomically $ (,) <$> newTQueue <*> newTQueue
   let newConnections =
                    M.insertWith -- Replace any old connection
                         (\new old -> new ++ filter ((/= name).fst) old)
                         addr
-                        [(name, conn)]
+                        [(name, (input, output))]
                         connections
   liftIO . atomically $ writeTVar (babyConnections y) newConnections
 
@@ -115,23 +111,3 @@ main = b >>= warp 3000
 getClientAddress :: Handler SockAddr
 getClientAddress = return $ remoteHost <$> waiRequest 
                    
-getBabies :: BabyConnections -> SockAddr -> [Baby]
-getBabies connections addr =
-    let
-        babies = M.lookup addr connections
-    in
-      case babies of
-        Nothing -> []
-        Just babies -> babies
-
--- Get rid of a baby, including the addr entry if it was the last baby
--- for this address
-extractBaby :: BabyConnections -> SockAddr -> BabyName -> (Maybe BabySocket, BabyConnections)
-extractBaby connections addr name = (baby, newConnections)
-  where
-    babies = getBabies connections addr
-    baby = lookup name babies
-    newBabies = filter (((/=) name) . fst) babies
-    newConnections = M.update (\_ -> case newBabies of
-                                       [] -> Nothing
-                                       xs -> newBabies) addr connections
