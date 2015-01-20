@@ -10,6 +10,7 @@ module BabyCommunication (
                          , newBaby
                          , getBabies
                          , popBabyConnection
+                         , dropBabyConnection
                          ) where
                           
 import Control.Concurrent.STM.TQueue
@@ -22,7 +23,7 @@ import Control.Applicative ((<$>),(<*>))
 newtype BabyConnection = BabyConnection (
                                          TQueue T.Text -- baby in
                                         , TQueue T.Text -- baby out
-                                        )
+                                        ) deriving (Eq)
 
 type BabyName = T.Text
 
@@ -52,7 +53,7 @@ getBabies (BabyConnections connections) addr =
     in
       case babies of
         Nothing -> []
-        Just babies -> babies
+        Just xs -> xs
 
 
 addBaby :: BabyConnections -> SockAddr -> Baby -> BabyConnections
@@ -80,7 +81,7 @@ popBabyConnection bConnections@(BabyConnections connections) addr name =
     babies = getBabies bConnections addr
     connection = lookup name babies
     babies' = filter (((/=) name) . fst) babies
-    connections' = updateMap m addr babies' 
+    connections' = updateMap connections addr babies' 
 
 
 dropBabyConnection :: BabyConnections -> SockAddr -> Baby -> BabyConnections

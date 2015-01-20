@@ -19,6 +19,7 @@ import Network.Socket (SockAddr)
 import Yesod.WebSockets
 import qualified Network.WebSockets as WS
 import Control.Concurrent.STM.TVar
+import Control.Concurrent.STM
 import Data.Aeson
 import Control.Exception.Base (finally)
 
@@ -84,28 +85,32 @@ babyWaiting name = do
     where
       writer = atomically . babySend connection <$> receiveData
       reader = atomically . babyReceive connection >>= sendTextData 
-      updateConnections = atomically $ do
-        old <- readTVar $ babyConnections y
-        let (_, new) = popBabyConnection old addr name
-        writeTVar (babyConnections y) new
+      updateConnections =
+          atomically $ modifyTVar' (babyConnections y)
+                         (\bcs -> dropBabyConnection bcs addr connection)
 
 connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do
   y <- lift getYesod
-  connections <- liftIO . atomically $ babyConnections y
   addr <- lift getClientAddress
-  let (mBaby, newConnections) = extractBaby connections addr name
+  atomically $ do
+    connections <- readTVar $ babyConnections y
+    let (mBaby, connections') = popBabyConnection connections addr name
+    putTVar (babyConnections y) connections'
+    
   case mBaby of
     Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named" <> name <> "!\"}"
-    baby -> do
-      baby >> sinkWSText
+    Just (_, connection) -> race_
+                   (forever $ atomically . parentSend connection <$> receiveData)
+                   (forever $ atomically . parentReceive connection >>= sendTextData)
+      
     
     
 getBabyOpenChannelR :: BabyName -> Handler ()
 getBabyOpenChannelR = webSockets . babyWaiting 
 
 getBabyConnectChannelR :: BabyName -> Handler ()
-getBabyConnectChannelR = undefined
+getBabyConnectChannelR = webSockets . connectBaby
 
 
 main :: IO ()
