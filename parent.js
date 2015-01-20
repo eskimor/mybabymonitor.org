@@ -1,86 +1,81 @@
-var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var RTCIceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var RTCSessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
+$(document).ready(connectSocket);
 
+function connectSocket() {
+    logEvent('Connecting ...');
+    var connection = new WebSocket('ws://@{BabyConnectChannelR "baby"}', [])
+    var servers = null;
+    var peerConnection = new RTCPeerConnection(servers);
+    peerConnection.onicecandidate = gotLocalIceCandidate(connection);
+    peerConnection.onaddstream = gotStream(connection);
+    connection.onerror = function (e) {
+        logErrorRetry('Websocket error: ' + e);
+        retryConnect();
+    }
+    connection.onmessage = function (e) {
+        var message = JSON.parse (e.data);
 
-function logEvent(t) {
-    $('body').append("<p>" + t +"</p>");
-}
-
-
-$(document).ready(
-    function(){
-       //  Set up volume:
-        var ctx = new window.AudioContext();
-        
-        
-        logEvent("Document loaded.");
-        var servers = null;
-        peerConnection = new RTCPeerConnection(servers);
-        peerConnection.onicecandidate = gotIceCandidate;
-        peerConnection.onaddstream = gotStream;
-        function retrieveIceCandidate() {
-            $.get('@{BabyIceCandidateR}'
-                  , function (data, status) {
-                      logEvent("Received ice (" + data + "): " + status);
-                      var pdata = JSON.parse(data);
-                      if(pdata) {
-                          peerConnection.addIceCandidate(new RTCIceCandidate(pdata));
-                          logEvent("Added ICE candidate.")
-                          retrieveIceCandidate();
-                      }
-                  }
-                 )
+        if(message.error) {
+            logErrorRetry('Server error: ' + message.error);
+            retryConnect();
+            return;
         }
-        retrieveIceCandidate();
-        $.get('@{BabyOfferDescriptionR}'
-              , function (data, status) {
-                  logEvent("Received description (" + data + "): " + status);
-                  peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(data)));
-                  peerConnection.createAnswer(
-                      gotDescription
-                      , function(error) {
-                          logEvent("Error happend when creating answer: " + error);
-                      }
-                  );
-              }
-             )
-        function gotStream(event){
-            logEvent("Received remote stream! JUHU! (" + event.stream.id + ")");
-            var source = ctx.createMediaStreamSource(event.stream);
-            var gainNode = ctx.createGain();
-            gainNode.gain.value = 10;
-            source.connect(gainNode);
-            gainNode.connect(ctx.destination);
-            $("#remoteVideo").attr('src', URL.createObjectURL(ctx.destination));
+        if(message.description) {
+            logEvent("Got baby description (" + message.description + "): " + status);
+            peerConnection.setRemoteDescription(new RTCSessionDescription(message.description));
+            peerConnection.createAnswer(
+                gotDescription(connection, peerConnection)
+                , function(e) {
+                    logErrorRetry('Error happend when creating answer: ' + e);
+                    retryConnect();
+                }
+            )
         }
-        function gotIceCandidate(event){
-            logEvent("Got ICE candidate: \n" + JSON.stringify(event.candidate) + "typeof(event): " + typeof(event));
-            // Send it to baby:
-            $.post('@{ParentIceCandidateR}'
-                   , {
-                       "data" : JSON.stringify(event.candidate)
-                   }
-                   , function(data, status) {
-                       logEvent("Posted ICE candidate ( " + data + "): " + status);
-                   }
-                  )
-        }
-        function gotDescription(description) {
-            logEvent("Got local description: " + JSON.stringify(description));
-            peerConnection.setLocalDescription(description);
-            $.post('@{ParentOfferDescriptionR}'
-                   , {
-                       "data" : JSON.stringify(description)
-                   }
-                   , function(data, status) {
-                       logEvent("Sent description (" + JSON.stringify(description) + "): " + status);
-                   }
-                  )
+        if(message.ice) {
+            logEvent("Got baby ice candidate (" + message.ice + "): " + status);
+            peerConnection.addIceCandidate(new RTCIceCandidate(message.ice));
         }
     }
-)
+}
 
+function gotStream(connection){
+    return function(event) {
+        logEvent("Received remote stream! JUHU! (" + event.stream.id + ")");
+        //  Set up volume:
+        var ctx = new window.AudioContext();
+        var source = ctx.createMediaStreamSource(event.stream);
+        var gainNode = ctx.createGain();
+        gainNode.gain.value = 10;
+        source.connect(gainNode);
+        gainNode.connect(ctx.destination);
+        $("#remoteVideo").attr('src', URL.createObjectURL(ctx.destination));
+        connection.send(JSON.stringify(
+            {
+                'gotStream' : 'true'
+            }
+        ))
+        connection.close();
+    }
+}
+
+function gotDescription(connection, peerConnection) {
+    return function(description) {
+        logEvent("Got local description: " + JSON.stringify(description));
+        peerConnection.setLocalDescription(description);
+        connection.send(JSON.stringify(
+            {
+                'description' : description
+            }
+        ))
+        logEvent('Sent description ...');
+    }
+}
+
+function retryConnect() {
+    setTimeout(connectSocket, 10000);
+}
+
+function logErrorRetry(e) {
+    logError(e + ", retrying in 10 seconds ...");
+    retryConnect();
+}

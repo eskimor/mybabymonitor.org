@@ -11,6 +11,7 @@ module BabyCommunication (
                          , getBabies
                          , popBabyConnection
                          , dropBabyConnection
+                         , emptyConnections
                          ) where
                           
 import Control.Concurrent.STM.TQueue
@@ -31,6 +32,8 @@ type Baby = (BabyName, BabyConnection)
 newtype BabyConnections = BabyConnections (M.Map SockAddr ([Baby]))
 
 
+emptyConnections :: BabyConnections
+emptyConnections = BabyConnections M.empty
 
 parentSend :: BabyConnection -> T.Text -> STM ()
 parentSend (BabyConnection (babyIn, _)) t = writeTQueue babyIn t

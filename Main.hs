@@ -3,6 +3,7 @@
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ViewPatterns #-}
 
 module Main where
 
@@ -22,6 +23,9 @@ import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM
 import Data.Aeson
 import Control.Exception.Base (finally)
+import Network.Wai (remoteHost)
+import Control.Monad (forever)
+import Data.Monoid ((<>))
 
 import BabyCommunication
 
@@ -33,8 +37,8 @@ mkYesod "BabyPhone" [parseRoutes|
                       /baby BabyR GET
                       /parent ParentR GET
                       /babies BabiesR GET
-                      /babyOpenChannel/#Text BabyOpenChannelR GET -- Opened by the baby
-                      /babyConnectChannel/#Text BabyConnectChannelR GET -- Connected by the parent
+                      /babyOpenChannel/#T.Text BabyOpenChannelR GET -- Opened by the baby
+                      /babyConnectChannel/#T.Text BabyConnectChannelR GET -- Connected by the parent
 |]
 
 instance Yesod BabyPhone
@@ -55,12 +59,14 @@ getBabyR :: Handler Html
 getBabyR = defaultLayout $ do
              $(whamletFile "baby.html")
              toWidget $(juliusFile "baby.js")
+             toWidget $(juliusFile "common.js")
              addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
 
 getParentR :: Handler Html
 getParentR = defaultLayout $ do
              $(whamletFile "parent.html")
              toWidget $(juliusFile "parent.js")
+             toWidget $(juliusFile "common.js")
              addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
 
 
@@ -68,41 +74,45 @@ getBabiesR :: Handler RepJson
 getBabiesR = do
   address <- getClientAddress
   BabyPhone connections <- getYesod
-  liftIO . atomically $ getBabies <$> connections
+  babies <- liftIO . atomically $ do
+            c <- readTVar connections
+            return $ getBabies c address
+  provideRep $ return . toJSON $ babies
 
 
 babyWaiting :: BabyName -> WebSocketsT Handler ()
 babyWaiting name = do
   y <- lift getYesod
   addr <- lift getClientAddress
-  atomically $ do
+  connection <- liftIO . atomically $ do
     connections <-  readTVar $ babyConnections y
     (connection, connections') <- newBaby connections addr name
-    putTVar (babyConnections y) $ connections'
+    writeTVar (babyConnections y) $ connections'
+    return connection
+  let writer = atomically . babySend connection <$> receiveData
+  let reader = atomically . babyReceive connection >>= sendTextData 
+  let updateConnections = atomically $
+                          modifyTVar' (babyConnections y)
+                          (\bcs -> dropBabyConnection bcs addr connection)
   race_
                    (forever $ finally writer updateConnections)
                    (forever $ finally reader updateConnections)
-    where
-      writer = atomically . babySend connection <$> receiveData
-      reader = atomically . babyReceive connection >>= sendTextData 
-      updateConnections =
-          atomically $ modifyTVar' (babyConnections y)
-                         (\bcs -> dropBabyConnection bcs addr connection)
 
 connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do
   y <- lift getYesod
   addr <- lift getClientAddress
-  atomically $ do
+  mBaby <- liftIO . atomically $ do
     connections <- readTVar $ babyConnections y
     let (mBaby, connections') = popBabyConnection connections addr name
-    putTVar (babyConnections y) connections'
+    writeTVar (babyConnections y) connections'
+    return mBaby
     
   case mBaby of
     Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named" <> name <> "!\"}"
-    Just (_, connection) -> race_
+    Just connection -> race_
                    (forever $ atomically . parentSend connection <$> receiveData)
-                   (forever $ atomically . parentReceive connection >>= sendTextData)
+                   (forever $ (liftIO . atomically . parentReceive connection) >>= sendTextData)
       
     
     
@@ -116,8 +126,8 @@ getBabyConnectChannelR = webSockets . connectBaby
 main :: IO ()
 main = b >>= warp 3000 
     where
-      b = BabyPhone <$> atomically $ newTVar M.empty
+      b = BabyPhone <$> (atomically $ newTVar emptyConnections)
 
 getClientAddress :: Handler SockAddr
-getClientAddress = return $ remoteHost <$> waiRequest 
+getClientAddress = remoteHost <$> waiRequest 
                    

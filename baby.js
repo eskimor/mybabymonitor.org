@@ -1,83 +1,86 @@
-var RTCPeerConnection = window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
-var RTCIceCandidate = window.mozRTCIceCandidate || window.RTCIceCandidate;
-var RTCSessionDescription = window.mozRTCSessionDescription || window.RTCSessionDescription;
-navigator.getUserMedia = navigator.getUserMedia || navigator.mozGetUserMedia || navigator.webkitGetUserMedia;
-
-
-function logEvent(t) {
-    $('body').append("<p>" + t +"</p>");
-}
-
-
 $(document).ready(
     function(){
         logEvent("Document loaded.");
         navigator.getUserMedia({audio:true, video:true}, gotStream,
                                function(error) {
-                                   logEvent("getUserMedia error: " + error);
+                                   logError("getUserMedia error: " + error);
                                }
                               );
         function gotStream(stream){
             logEvent("Received local stream.");
-            var servers = null;
-            peerConnection = new RTCPeerConnection(servers);
-            peerConnection.onicecandidate = gotLocalIceCandidate;
-            logEvent("Adding stream ...");
-            peerConnection.addStream(stream);
-            logEvent("Creating offer ...");
-            peerConnection.createOffer(
-                function(description) {
-                    logEvent("Got description: " + JSON.stringify(description));
-                    peerConnection.setLocalDescription(description);
-                    $.post('@{BabyOfferDescriptionR}'
-                           , {
-                               "data" : JSON.stringify(description)
-                           }
-                           , function (data, status) {
-                               logEvent("Posted (" + data + "): " + status);
-                               //                               gotStream(stream); // Await new clients
-                           }
-                          )
-                    
-                }
-                ,
-                function(error) {
-                    logEvent("Error creating offer: " + error);
-                }
-            )
-            function retrieveIceCandidate() {
-                $.get('@{ParentIceCandidateR}'
-                      , function(data, status) {
-                          logEvent("Got parent ice candidate (" + data + "): " + status);
-                          var pdata = JSON.parse(data);
-                          if(pdata) {
-                              peerConnection.addIceCandidate(new RTCIceCandidate(pdata));
-                              retrieveIceCandidate();
-                          }
-                      }
-                     )
-            }
-            retrieveIceCandidate();
-            $.get('@{ParentOfferDescriptionR}'
-                  , function(data, status) {
-                      logEvent("Got parent description (" + data + "): " + status);
-                      peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(data)));
-                  }
-                 )
-
+            openSocket(stream);
         }
-        function gotLocalIceCandidate(event){
-            logEvent("Got ICE candidate: " + JSON.stringify(event.candidate));
-            // Send it to server:
-            $.post('@{BabyIceCandidateR}'
-                   , {
-                       "data" : JSON.stringify(event.candidate)
-                   }
-                   , function(data, status) {
-                       logEvent("Posted ICE candidate ( " + data + "): " + status);
-                   }
-                  )
-        }           
     }
 )
 
+
+function openSocket(stream) {
+    var connection = new WebSocket('ws://@{BabyOpenChannelR "baby"}', []);
+    var peerConnection = null;
+    connection.onerror = function (e) {
+        logErrorRetry('Websocket error: ' + e , stream);
+    }
+    connection.onmessage = function (e) {
+        var message = JSON.parse(e.data);
+        if(message.error) {
+            logErrorRetry('Server error: ' + message.error, stream);
+            return;
+        }
+        if(message.startStreaming) {
+            peerConnection = startStreaming(stream, connection);
+            // Ok we got one client, let's wait for another one:
+            openSocket(stream);
+        }
+        if(message.description) {
+            logEvent("Got parent description (" + message.description + "): " + status);
+            peerConnection.setRemoteDescription(new RTCSessionDescription(message.description));
+        }
+        if(message.ice) {
+            logEvent("Got parent ice candidate (" + message.ice + "): " + status);
+            peerConnection.addIceCandidate(new RTCIceCandidate(message.ice));
+        }
+        if(message.gotStream) {
+            logEvent("Parent is connected, closing socket ...");
+            connection.close();
+        }
+    }
+}
+
+
+function startStreaming(stream, connection) { // Alright then.
+    var servers = null;
+    var peerConnection = new RTCPeerConnection(servers);
+    peerConnection.onicecandidate = gotLocalIceCandidate(connection);
+    logEvent("Adding stream ...");
+    peerConnection.addStream(stream);
+    logEvent("Creating offer ...");
+    peerConnection.createOffer(
+        function(description) {
+            logEvent("Got description: " + JSON.stringify(description));
+            peerConnection.setLocalDescription(description);
+            connection.send(JSON.stringify(
+                {
+                    'description' : description
+                }
+            ))
+            logEvent('Sent description.');
+            
+        }
+        ,
+        function(error) {
+            logErrorRetry("Error creating offer: " + error, stream);
+            throw("Something went wrong, see log!")
+        }
+    )
+    return peerConnection;
+}
+
+
+function retrySocket(stream) {
+    setTimeout(function () {openSocket(stream);}, 10000);
+}
+
+function logErrorRetry(e, stream) {
+    logError(e + ", retrying in 10 seconds ...");
+    retrySocket(stream);
+}
