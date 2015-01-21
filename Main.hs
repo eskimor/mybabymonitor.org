@@ -27,6 +27,7 @@ import Network.Wai (remoteHost)
 import Control.Monad 
 import Data.Monoid ((<>))
 import Yesod.Core.Json
+import Control.Monad.Reader (ask)
 
 import BabyCommunication
 
@@ -77,7 +78,7 @@ getBabiesR = do
   BabyPhone connections <- getYesod
   babies <- liftIO . atomically $ do
             c <- readTVar connections
-            return $ getBabies c address
+            return $ fmap fst . getBabies c $ address
   returnJson babies
 
 
@@ -88,16 +89,17 @@ babyWaiting name = do
   connection <- liftIO . atomically $ do
     connections <-  readTVar $ babyConnections y
     (connection, connections') <- newBaby connections addr name
-    writeTVar (babyConnections y) $ connections'
+    writeTVar (babyConnections y) connections'
     return connection
-  let writer = liftIO . atomically . babySend connection <$> receiveData
-  let reader =  (liftIO . atomically . babyReceive) connection >>= sendTextData 
-  let updateConnections = liftIO . atomically $
+  websock <- ask
+  let writer = atomically . babySend connection <$> WS.receiveData websock
+  let reader = (atomically . babyReceive) connection >>= WS.sendTextData websock
+  let updateConnections = atomically $
                           modifyTVar' (babyConnections y)
                           (\bcs -> dropBabyConnection bcs addr (name,connection))
   race_
-                   (liftM2 finally (forever writer) updateConnections)
-                   (liftM2 finally (forever reader) updateConnections)
+                   (liftIO $ finally (forever writer) updateConnections)
+                   (liftIO $ finally (forever reader) updateConnections)
 
 connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do
@@ -108,12 +110,12 @@ connectBaby name = do
     let (mBaby, connections') = popBabyConnection connections addr name
     writeTVar (babyConnections y) connections'
     return mBaby
-    
+  webSock <- ask
   case mBaby of
     Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named" <> name <> "!\"}"
-    Just connection -> race_
-                   (forever $ liftIO . atomically . parentSend connection <$> receiveData)
-                   (forever $ (liftIO . atomically . parentReceive) connection >>= sendTextData)
+    Just connection -> liftIO $ race_
+                   (forever $ atomically . parentSend connection <$> WS.receiveData webSock)
+                   (forever $ (atomically . parentReceive) connection >>= WS.sendTextData webSock)
       
     
     
@@ -127,8 +129,16 @@ getBabyConnectChannelR = webSockets . connectBaby
 main :: IO ()
 main = b >>= warp 3000 
     where
-      b = BabyPhone <$> (atomically $ newTVar emptyConnections)
+      b = BabyPhone <$> atomically (newTVar emptyConnections)
 
 getClientAddress :: Handler SockAddr
 getClientAddress = remoteHost <$> waiRequest 
-                   
+
+{--ourFinally :: WebSocketsT Handler a -> WebSocketsT Handler b -> WebSocketsT Handler ()
+ourFinally a b = do
+  ma <- a
+  mb <- b
+  liftIO $ finally (return ma) (return mb)
+    
+
+--}
