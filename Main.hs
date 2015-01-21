@@ -24,8 +24,9 @@ import Control.Concurrent.STM
 import Data.Aeson
 import Control.Exception.Base (finally)
 import Network.Wai (remoteHost)
-import Control.Monad (forever)
+import Control.Monad 
 import Data.Monoid ((<>))
+import Yesod.Core.Json
 
 import BabyCommunication
 
@@ -70,14 +71,14 @@ getParentR = defaultLayout $ do
              addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
 
 
-getBabiesR :: Handler RepJson
+getBabiesR :: Handler Value
 getBabiesR = do
   address <- getClientAddress
   BabyPhone connections <- getYesod
   babies <- liftIO . atomically $ do
             c <- readTVar connections
             return $ getBabies c address
-  provideRep $ return . toJSON $ babies
+  returnJson babies
 
 
 babyWaiting :: BabyName -> WebSocketsT Handler ()
@@ -89,14 +90,14 @@ babyWaiting name = do
     (connection, connections') <- newBaby connections addr name
     writeTVar (babyConnections y) $ connections'
     return connection
-  let writer = atomically . babySend connection <$> receiveData
-  let reader = atomically . babyReceive connection >>= sendTextData 
-  let updateConnections = atomically $
+  let writer = liftIO . atomically . babySend connection <$> receiveData
+  let reader =  (liftIO . atomically . babyReceive) connection >>= sendTextData 
+  let updateConnections = liftIO . atomically $
                           modifyTVar' (babyConnections y)
-                          (\bcs -> dropBabyConnection bcs addr connection)
+                          (\bcs -> dropBabyConnection bcs addr (name,connection))
   race_
-                   (forever $ finally writer updateConnections)
-                   (forever $ finally reader updateConnections)
+                   (liftM2 finally (forever writer) updateConnections)
+                   (liftM2 finally (forever reader) updateConnections)
 
 connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do
@@ -111,8 +112,8 @@ connectBaby name = do
   case mBaby of
     Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named" <> name <> "!\"}"
     Just connection -> race_
-                   (forever $ atomically . parentSend connection <$> receiveData)
-                   (forever $ (liftIO . atomically . parentReceive connection) >>= sendTextData)
+                   (forever $ liftIO . atomically . parentSend connection <$> receiveData)
+                   (forever $ (liftIO . atomically . parentReceive) connection >>= sendTextData)
       
     
     
