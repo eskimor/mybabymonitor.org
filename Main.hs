@@ -28,6 +28,7 @@ import Control.Monad
 import Data.Monoid ((<>))
 import Yesod.Core.Json
 import Control.Monad.Reader (ask)
+import qualified Data.Text.IO as TIO
 
 import BabyCommunication
 
@@ -45,8 +46,7 @@ mkYesod "BabyPhone" [parseRoutes|
 
 instance Yesod BabyPhone where
     approot = ApprootStatic "http://localhost:3000"
-    shouldLog app src level = True -- good for development
-    -- level == LevelWarn || level == LevelError -- good for production
+    shouldLog _ _ _ = True -- good for development
 
 instance RenderMessage BabyPhone FormMessage where
     renderMessage _ _ = defaultFormMessage
@@ -96,7 +96,11 @@ babyWaiting name = do
     writeTVar (babyConnections y) connections'
     return connection
   websock <- ask
-  let writer = atomically . babySend connection <$> WS.receiveData websock
+  -- let writer = atomically . babySend connection <$> WS.receiveData websock
+  let writer = do
+        received <- WS.receiveData websock
+        atomically . babySend connection $ received
+        TIO.putStrLn $ "Baby wants to send data: " <> received
   let reader = (atomically . babyReceive) connection >>= WS.sendTextData websock
   let updateConnections = atomically $
                           modifyTVar' (babyConnections y)
@@ -119,8 +123,18 @@ connectBaby name = do
   case mBaby of
     Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named " <> name <> "\"}"
     Just connection -> liftIO $ race_
-                   (forever $ atomically . parentSend connection <$> WS.receiveData webSock)
-                   (forever $ (atomically . parentReceive) connection >>= WS.sendTextData webSock)
+                   --(forever $ atomically . parentSend connection <$> WS.receiveData webSock)
+                   (forever $ do
+                      received <- WS.receiveData webSock
+                      TIO.putStrLn $ "Received data from parent: " <> received
+                      atomically . parentSend connection $ received
+                   )
+                   --(forever $ (atomically . parentReceive) connection >>= WS.sendTextData webSock)
+                   (forever $ do
+                       received <- atomically . parentReceive $ connection
+                       TIO.putStrLn $ "Received data from baby: " <> received
+                       WS.sendTextData webSock received
+                   )
       
     
     
@@ -145,11 +159,3 @@ filterPort (SockAddrInet _ address) = SockAddrInet (PortNum 0) address
 filterPort (SockAddrInet6 _ flow address scope) = SockAddrInet6 (PortNum 0) flow address scope
 filterPort s = s
 
-{--ourFinally :: WebSocketsT Handler a -> WebSocketsT Handler b -> WebSocketsT Handler ()
-ourFinally a b = do
-  ma <- a
-  mb <- b
-  liftIO $ finally (return ma) (return mb)
-    
-
---}

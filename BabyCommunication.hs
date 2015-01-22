@@ -39,13 +39,13 @@ parentSend :: BabyConnection -> T.Text -> STM ()
 parentSend (BabyConnection (babyIn, _)) t = writeTQueue babyIn t
 
 parentReceive :: BabyConnection -> STM T.Text
-parentReceive (BabyConnection (babyIn, _)) = readTQueue babyIn
+parentReceive (BabyConnection (_, babyOut)) = readTQueue babyOut
 
 babySend :: BabyConnection -> T.Text -> STM ()
 babySend (BabyConnection (_, babyOut)) t = writeTQueue babyOut t
 
 babyReceive :: BabyConnection -> STM T.Text
-babyReceive (BabyConnection (_ , babyOut)) = readTQueue babyOut
+babyReceive (BabyConnection (babyIn , _)) = readTQueue babyIn
 
 
 -- Get all the babies registered for a given public IP

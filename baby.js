@@ -27,6 +27,7 @@ function openSocket(stream) {
             return;
         }
         if(message.startStreaming) {
+            logEvent("Parent connected");
             peerConnection = startStreaming(stream, connection);
             // Ok we got one client, let's wait for another one:
             openSocket(stream);

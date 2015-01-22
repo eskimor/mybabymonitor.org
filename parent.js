@@ -4,22 +4,37 @@ $(document).ready(connectSocket);
 function connectSocket() {
     logEvent('Connecting ...');
     var connection = new WebSocket(webSockUrl('@{BabyConnectChannelR "baby"}'), [])
+    var streaming = false;
+    function startStreamingOnce() {
+        if(streaming)
+            return;
+        try {
+            startStreaming(connection);
+            streaming = true;
+        }
+        catch(e) {
+            logEvent("Sending startStreaming failed (readyState: " + connection.readyState + "): " + e);
+        }
+    }
+        
+    connection.onopen = function (e) {
+        startStreamingOnce();
+    }
+    connection.onclose = function (e) {
+        logEvent("Connection closed: " + e);
+    }
+    startStreamingOnce();
     var servers = null;
     var peerConnection = new RTCPeerConnection(servers);
     peerConnection.onicecandidate = gotLocalIceCandidate(connection);
     peerConnection.onaddstream = gotStream(connection);
-    connection.onopen = function (e) {connection.send(JSON.stringify(
-        {
-            'startStreaming' : true
-        }
-    ))}
     connection.onerror = function (e) {
         logErrorRetry('Websocket error: ' + e);
         retryConnect();
     }
     connection.onmessage = function (e) {
-        var message = JSON.parse (e.data);
         logEvent("Got message: " + e.data);
+        var message = JSON.parse (e.data);
         if(message.error) {
             logErrorRetry('Server error: ' + message.error);
             retryConnect();
@@ -83,4 +98,13 @@ function retryConnect() {
 function logErrorRetry(e) {
     logError(e + ", retrying in 10 seconds ...");
     retryConnect();
+}
+
+function startStreaming(connection) {
+    logEvent("Sending startStreaming ...");
+    connection.send(JSON.stringify(
+        {
+            'startStreaming' : true
+        }
+    ))
 }
