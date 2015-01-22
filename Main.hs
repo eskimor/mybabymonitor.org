@@ -16,7 +16,7 @@ import qualified Data.Conduit.Text as CT
 import qualified Data.Conduit as C
 import Data.Conduit (($$), (=$))
 import Control.Applicative ((<$>),(<*>))
-import Network.Socket (SockAddr)
+import Network.Socket (SockAddr(..), PortNumber(..), HostAddress(..))
 import Yesod.WebSockets
 import qualified Network.WebSockets as WS
 import Control.Concurrent.STM.TVar
@@ -43,7 +43,10 @@ mkYesod "BabyPhone" [parseRoutes|
                       /babyConnectChannel/#T.Text BabyConnectChannelR GET -- Connected by the parent
 |]
 
-instance Yesod BabyPhone
+instance Yesod BabyPhone where
+    approot = ApprootStatic "http://localhost:3000"
+    shouldLog app src level = True -- good for development
+    -- level == LevelWarn || level == LevelError -- good for production
 
 instance RenderMessage BabyPhone FormMessage where
     renderMessage _ _ = defaultFormMessage
@@ -86,6 +89,7 @@ babyWaiting :: BabyName -> WebSocketsT Handler ()
 babyWaiting name = do
   y <- lift getYesod
   addr <- lift getClientAddress
+  $logDebug $ "waiting Baby got address: " <> (T.pack . show $ addr)
   connection <- liftIO . atomically $ do
     connections <-  readTVar $ babyConnections y
     (connection, connections') <- newBaby connections addr name
@@ -105,6 +109,7 @@ connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do
   y <- lift getYesod
   addr <- lift getClientAddress
+  $logDebug $ "connect Baby got address: " <> (T.pack . show $ addr)
   mBaby <- liftIO . atomically $ do
     connections <- readTVar $ babyConnections y
     let (mBaby, connections') = popBabyConnection connections addr name
@@ -112,7 +117,7 @@ connectBaby name = do
     return mBaby
   webSock <- ask
   case mBaby of
-    Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named" <> name <> "!\"}"
+    Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named \"" <> name <> "\"\"}"
     Just connection -> liftIO $ race_
                    (forever $ atomically . parentSend connection <$> WS.receiveData webSock)
                    (forever $ (atomically . parentReceive) connection >>= WS.sendTextData webSock)
@@ -132,7 +137,13 @@ main = b >>= warp 3000
       b = BabyPhone <$> atomically (newTVar emptyConnections)
 
 getClientAddress :: Handler SockAddr
-getClientAddress = remoteHost <$> waiRequest 
+getClientAddress = filterPort . remoteHost <$> waiRequest
+
+
+filterPort :: SockAddr -> SockAddr
+filterPort (SockAddrInet _ address) = SockAddrInet (PortNum 0) address
+filterPort (SockAddrInet6 _ flow address scope) = SockAddrInet6 (PortNum 0) flow address scope
+filterPort s = s
 
 {--ourFinally :: WebSocketsT Handler a -> WebSocketsT Handler b -> WebSocketsT Handler ()
 ourFinally a b = do

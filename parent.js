@@ -3,18 +3,23 @@ $(document).ready(connectSocket);
 
 function connectSocket() {
     logEvent('Connecting ...');
-    var connection = new WebSocket('ws://@{BabyConnectChannelR "baby"}', [])
+    var connection = new WebSocket(webSockUrl('@{BabyConnectChannelR "baby"}'), [])
     var servers = null;
     var peerConnection = new RTCPeerConnection(servers);
     peerConnection.onicecandidate = gotLocalIceCandidate(connection);
     peerConnection.onaddstream = gotStream(connection);
+    connection.onopen = function (e) {connection.send(JSON.stringify(
+        {
+            'startStreaming' : true
+        }
+    ))}
     connection.onerror = function (e) {
         logErrorRetry('Websocket error: ' + e);
         retryConnect();
     }
     connection.onmessage = function (e) {
         var message = JSON.parse (e.data);
-
+        logEvent("Got message: " + e.data);
         if(message.error) {
             logErrorRetry('Server error: ' + message.error);
             retryConnect();

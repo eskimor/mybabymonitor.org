@@ -15,7 +15,7 @@ $(document).ready(
 
 
 function openSocket(stream) {
-    var connection = new WebSocket('ws://@{BabyOpenChannelR "baby"}', []);
+    var connection = new WebSocket(webSockUrl('@{BabyOpenChannelR "baby"}'), []);
     var peerConnection = null;
     connection.onerror = function (e) {
         logErrorRetry('Websocket error: ' + e , stream);
