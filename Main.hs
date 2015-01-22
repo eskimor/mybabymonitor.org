@@ -117,7 +117,7 @@ connectBaby name = do
     return mBaby
   webSock <- ask
   case mBaby of
-    Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named \"" <> name <> "\"\"}"
+    Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named " <> name <> "\"}"
     Just connection -> liftIO $ race_
                    (forever $ atomically . parentSend connection <$> WS.receiveData webSock)
                    (forever $ (atomically . parentReceive) connection >>= WS.sendTextData webSock)
