@@ -23,6 +23,18 @@ function logError(e) {
     $('body').append("<p class='error'>" + e +"</p>");
 }
 
+function logErrorF(m) {
+    return function (e) {
+        logError(m + e);
+    }
+}
+
+function logEventF(m) {
+    return function ()  {
+        logEvent(m);
+    }
+}
+
 function webSockUrl(url) {
    return url.replace('http://', 'ws://').replace('https://', 'wss://')
 }

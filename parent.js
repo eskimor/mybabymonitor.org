@@ -21,30 +21,30 @@ function connectSocket() {
     peerConnection.onaddstream = gotStream(connection);
     connection.onerror = function (e) {
         logErrorRetry('Websocket error: ' + e);
-        retryConnect();
     }
     connection.onmessage = function (e) {
         logEvent("Got message: " + e.data);
         var message = JSON.parse (e.data);
         if(message.error) {
+            connection.close();
             logErrorRetry('Server error: ' + message.error);
-            retryConnect();
             return;
         }
         if(message.description) {
             logEvent("Got baby description (" + message.description + "): " + status);
-            peerConnection.setRemoteDescription(new RTCSessionDescription(message.description));
-            peerConnection.createAnswer(
-                gotDescription(connection, peerConnection)
-                , function(e) {
-                    logErrorRetry('Error happend when creating answer: ' + e);
-                    retryConnect();
-                }
-            )
+            peerConnection.setRemoteDescription(
+                new RTCSessionDescription(message.description)
+                , createAnswer(peerConnection, connection)
+                , logErrorF("Error while setting remote description: ")
+            );
         }
         if(message.ice) {
             logEvent("Got baby ice candidate (" + message.ice + "): " + status);
-            peerConnection.addIceCandidate(new RTCIceCandidate(message.ice));
+            peerConnection.addIceCandidate(
+                new RTCIceCandidate(message.ice)
+                , logEventF("Successfully added ice candidate!")
+                , logErrorF("Adding ice candidate failed: ")
+            );
         }
     }
 }
@@ -79,13 +79,19 @@ function gotStream(connection){
 function gotDescription(connection, peerConnection) {
     return function(description) {
         logEvent("Got local description: " + JSON.stringify(description));
-        peerConnection.setLocalDescription(description);
-        connection.send(JSON.stringify(
-            {
-                'description' : description
-            }
-        ))
-        logEvent('Sent description ...');
+        function sendDescription() {
+            connection.send(JSON.stringify(
+                {
+                    'description' : description
+                }
+            ))
+            logEvent('Sent description ...');
+        }
+        peerConnection.setLocalDescription(
+            description
+            , sendDescription
+            , logErrorF("Error while setting local description: ")
+        );
     }
 }
 
@@ -105,4 +111,14 @@ function startStreaming(connection) {
             'startStreaming' : true
         }
     ))
+}
+
+
+function createAnswer(peerConnection, connection) {
+    return function () {
+        peerConnection.createAnswer(
+            gotDescription(connection, peerConnection)
+            , logErrorF('Error happend when creating answer: ')
+        );
+    }
 }
