@@ -1,21 +1,24 @@
 $(document).ready(
     function(){
         logEvent("Document loaded.");
-        navigator.getUserMedia({audio:true, video:true}, gotStream,
-                               function(error) {
-                                   logError("getUserMedia error: " + error);
-                               }
-                              );
-        function gotStream(stream){
-            logEvent("Received local stream.");
-            openSocket(stream);
-        }
+        navigator.getUserMedia(
+            {audio:true, video:true}
+            , gotStream
+            , logErrorF("getUserMedia error: ")
+        );
     }
 )
 
 
 function openSocket(stream) {
-    var connection = new WebSocket(webSockUrl('@{BabyOpenChannelR "baby"}'), []);
+    var connection = null;
+    try {
+        connection = new WebSocket(webSockUrl('@{BabyOpenChannelR "baby"}'), []);
+    }
+    catch (e) {
+        logErrorRetry("Error when creating WebSocket: " + e, stream);
+        return;
+    }
     var peerConnection = null;
     connection.onerror = function (e) {
         logErrorRetry('Websocket error: ' + e , stream);
@@ -34,11 +37,19 @@ function openSocket(stream) {
         }
         if(message.description) {
             logEvent("Got parent description (" + message.description + "): " + status);
-            peerConnection.setRemoteDescription(new RTCSessionDescription(message.description));
+            peerConnection.setRemoteDescription(
+                new RTCSessionDescription(message.description)
+                , logEventF("Successfully set remote description.")
+                , logErrorF("Error while setting remote description: ")
+            );
         }
         if(message.ice) {
             logEvent("Got parent ice candidate (" + message.ice + "): " + status);
-            peerConnection.addIceCandidate(new RTCIceCandidate(message.ice));
+            peerConnection.addIceCandidate(
+                new RTCIceCandidate(message.ice)
+                , logEventF("Successfully added ice candidate.")
+                , logErrorF("Error while setting ice candidate: ")
+            );
         }
         if(message.gotStream) {
             logEvent("Parent is connected, closing socket ...");
@@ -58,24 +69,32 @@ function startStreaming(stream, connection) { // Alright then.
     peerConnection.createOffer(
         function(description) {
             logEvent("Got description: " + JSON.stringify(description));
-            peerConnection.setLocalDescription(description);
-            connection.send(JSON.stringify(
-                {
-                    'description' : description
-                }
-            ))
-            logEvent('Sent description.');
-            
+            peerConnection.setLocalDescription(
+                description
+                , gotLocalDescription(connection, description)
+                , logErrorF("Error while setting local description: ")
+            );
         }
-        ,
-        function(error) {
-            logErrorRetry("Error creating offer: " + error, stream);
-            throw("Something went wrong, see log!")
-        }
-    )
+        , logErrorF("Error creating offer: ")
+    );
     return peerConnection;
 }
 
+function gotLocalDescription(connection, description) {
+    return function () {
+        connection.send(JSON.stringify(
+            {
+                'description' : description
+            }
+        ))
+        logEvent('Sent description.');
+    }
+}
+
+function gotStream(stream){
+    logEvent("Received local stream.");
+    openSocket(stream);
+}
 
 function retrySocket(stream) {
     setTimeout(function () {openSocket(stream);}, 10000);
