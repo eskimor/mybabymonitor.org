@@ -4,26 +4,17 @@ $(document).ready(connectSocket);
 function connectSocket() {
     logEvent('Connecting ...');
     var connection = new WebSocket(webSockUrl('@{BabyConnectChannelR "baby"}'), [])
-    var streaming = false;
-    function startStreamingOnce() {
-        if(streaming)
-            return;
+    connection.onopen = function (e) {
         try {
             startStreaming(connection);
-            streaming = true;
         }
         catch(e) {
-            logEvent("Sending startStreaming failed (readyState: " + connection.readyState + "): " + e);
+            logErrorRetry("Sending startStreaming failed (readyState: " + connection.readyState + "): " + e);
         }
-    }
-        
-    connection.onopen = function (e) {
-        startStreamingOnce();
     }
     connection.onclose = function (e) {
         logEvent("Connection closed: " + e);
     }
-    startStreamingOnce();
     var servers = null;
     var peerConnection = new RTCPeerConnection(servers);
     peerConnection.onicecandidate = gotLocalIceCandidate(connection);
@@ -68,7 +59,14 @@ function gotStream(connection){
         gainNode.gain.value = 10;
         source.connect(gainNode);
         gainNode.connect(ctx.destination);
-        $("#remoteVideo").attr('src', URL.createObjectURL(ctx.destination));
+        var stream = ctx.createMediaStreamDestination().stream;
+        try {
+            stream.addTrack(event.stream.getVideoTracks()[0]);
+        }
+        catch (e) {
+            logError("Got no video.");
+        }
+        $("#remoteVideo").attr('src', URL.createObjectURL(stream));
         connection.send(JSON.stringify(
             {
                 'gotStream' : 'true'
