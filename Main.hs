@@ -22,7 +22,8 @@ import qualified Network.WebSockets as WS
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM
 import Data.Aeson
-import Control.Exception.Base (finally)
+import Control.Exception.Base (SomeException)
+import Control.Exception.Lifted (catch)
 import Network.Wai (remoteHost)
 import Control.Monad 
 import Data.Monoid ((<>))
@@ -95,19 +96,19 @@ babyWaiting name = do
     (connection, connections') <- newBaby connections addr name
     writeTVar (babyConnections y) connections'
     return connection
-  websock <- ask
-  -- let writer = atomically . babySend connection <$> WS.receiveData websock
-  let writer = do
-        received <- WS.receiveData websock
-        atomically . babySend connection $ received
-        TIO.putStrLn $ "Baby wants to send data: " <> received
-  let reader = (atomically . babyReceive) connection >>= WS.sendTextData websock
-  let updateConnections = atomically $
-                          modifyTVar' (babyConnections y)
-                          (\bcs -> dropBabyConnection bcs addr (name,connection))
+  let writer = receiveData >>= liftIO . atomically . babySend connection 
+  let reader = (liftIO . atomically . babyReceive) connection >>= sendTextData
+  let updateConnections' = updateConnections y addr connection
   race_
-                   (liftIO $ finally (forever writer) updateConnections)
-                   (liftIO $ finally (forever reader) updateConnections)
+                   (catch (forever writer) updateConnections')
+                   (catch (forever reader) updateConnections')
+  where
+    updateConnections :: BabyPhone -> SockAddr ->  BabyConnection -> SomeException -> WebSocketsT Handler ()
+    updateConnections y addr connection e = do
+                     $logDebug $ "Baby end communication exited with exception: " <> (T.pack . show $ e)
+                     liftIO . atomically $ modifyTVar' (babyConnections y)
+                          (\bcs -> dropBabyConnection bcs addr (name,connection))
+
 
 connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do
@@ -119,23 +120,25 @@ connectBaby name = do
     let (mBaby, connections') = popBabyConnection connections addr name
     writeTVar (babyConnections y) connections'
     return mBaby
+  $logDebug "After tvar!"
   webSock <- ask
   case mBaby of
     Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named " <> name <> "\"}"
-    Just connection -> liftIO $ race_
-                   --(forever $ atomically . parentSend connection <$> WS.receiveData webSock)
-                   (forever $ do
-                      received <- WS.receiveData webSock
-                      TIO.putStrLn $ "Received data from parent: " <> received
-                      atomically . parentSend connection $ received
-                   )
-                   --(forever $ (atomically . parentReceive) connection >>= WS.sendTextData webSock)
-                   (forever $ do
-                       received <- atomically . parentReceive $ connection
-                       TIO.putStrLn $ "Received data from baby: " <> received
-                       WS.sendTextData webSock received
-                   )
-      
+    Just connection ->
+        let
+            writer :: WebSocketsT Handler ()
+            writer = receiveData >>= liftIO . atomically . parentSend connection
+            reader = (liftIO . atomically . parentReceive) connection >>= sendTextData
+        in
+         do
+          $logDebug "We found your baby, stay put!"
+          race_
+             (catch (forever writer) printException)
+             (catch (forever reader) printException)
+    where
+      printException :: SomeException -> WebSocketsT Handler ()
+      printException e = $logDebug $ "Parent end communication exited with exception: " <> (T.pack . show $ e)
+
     
     
 getBabyOpenChannelR :: BabyName -> Handler ()
