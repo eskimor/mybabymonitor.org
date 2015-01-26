@@ -58,7 +58,11 @@ data BabyPhone = BabyPhone {
 }
 
 getHomeR :: Handler Html
-getHomeR = defaultLayout [whamlet|Hello World!|]
+getHomeR =  do
+             address <- getClientAddress
+             BabyPhone connections <- getYesod
+             babies <- liftIO . atomically $ fmap fst . flip getBabies address <$> readTVar connections 
+             defaultLayout $(whamletFile "home.html")
 
 
 getBabyR :: Handler Html
@@ -76,14 +80,18 @@ getParentR = defaultLayout $ do
              addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
 
 
-getBabiesR :: Handler Value
+getBabiesR :: Handler TypedContent
 getBabiesR = do
   address <- getClientAddress
   BabyPhone connections <- getYesod
   babies <- liftIO . atomically $ do
             c <- readTVar connections
             return $ fmap fst . getBabies c $ address
-  returnJson babies
+  selectRep $ do
+               provideRep $ return [shamlet| $forall baby <- babies
+                                                     <option value='#{baby}'>#{baby}
+                            |]
+               provideRep $ returnJson babies
 
 
 babyWaiting :: BabyName -> WebSocketsT Handler ()
@@ -154,8 +162,8 @@ main = b >>= warp 3000
       b = BabyPhone <$> atomically (newTVar emptyConnections)
 
 getClientAddress :: Handler SockAddr
-getClientAddress = filterPort . remoteHost <$> waiRequest
-
+--getClientAddress = filterPort . remoteHost <$> waiRequest
+getClientAddress = return $ SockAddrUnix ""
 
 filterPort :: SockAddr -> SockAddr
 filterPort (SockAddrInet _ address) = SockAddrInet (PortNum 0) address
