@@ -46,6 +46,17 @@ function connectSocket() {
                 , logErrorF("Adding ice candidate failed: ")
             );
         }
+    /*    else if(message.ice == null) {
+            logEvent("Got null ice candidate, closing connection!");
+            connection.send(JSON.stringify(
+                {
+                    'gotStream' : 'true'
+                }
+            ))
+            connection.close();
+        }
+        */
+
     }
 }
 
@@ -59,20 +70,9 @@ function gotStream(connection){
         gainNode.gain.value = 10;
         source.connect(gainNode);
         gainNode.connect(ctx.destination);
-        var stream = ctx.createMediaStreamDestination().stream;
-        try {
-            stream.addTrack(event.stream.getVideoTracks()[0]);
-        }
-        catch (e) {
-            logError("Got no video.");
-        }
-        $("#remoteVideo").attr('src', URL.createObjectURL(stream));
-        connection.send(JSON.stringify(
-            {
-                'gotStream' : 'true'
-            }
-        ))
-        connection.close();
+        
+        $("#remoteVideo").attr('src', URL.createObjectURL(event.stream));
+        $("#remoteAudio").attr('src', URL.createObjectURL(ctx.destination));
     }
 }
 
