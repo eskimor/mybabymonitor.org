@@ -31,9 +31,9 @@ function openSocket(stream) {
         }
         if(message.startStreaming) {
             logEvent("Parent connected");
-            peerConnection = startStreaming(stream, connection);
             // Ok we got one client, let's wait for another one:
             openSocket(stream);
+            peerConnection = startStreaming(stream, connection);
         }
         if(message.description) {
             logEvent("Got parent description (" + message.description + "): " + status);
@@ -95,6 +95,7 @@ function gotStream(stream){
     logEvent("Received local stream.");
     openSocket(stream);
 }
+
 
 function retrySocket(stream) {
     setTimeout(function () {openSocket(stream);}, 10000);

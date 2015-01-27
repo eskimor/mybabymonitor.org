@@ -87,11 +87,7 @@ getBabiesR = do
   babies <- liftIO . atomically $ do
             c <- readTVar connections
             return $ fmap fst . getBabies c $ address
-  selectRep $ do
-               provideRep $ return [shamlet| $forall baby <- babies
-                                                     <option value='#{baby}'>#{baby}
-                            |]
-               provideRep $ returnJson babies
+  selectRep $ provideRep $ returnJson babies
 
 
 babyWaiting :: BabyName -> WebSocketsT Handler ()
@@ -129,7 +125,6 @@ connectBaby name = do
     writeTVar (babyConnections y) connections'
     return mBaby
   $logDebug "After tvar!"
-  webSock <- ask
   case mBaby of
     Nothing -> sendTextData $ "{\"error\" : \"You don't have a baby named " <> name <> "\"}"
     Just connection ->
@@ -140,6 +135,7 @@ connectBaby name = do
         in
          do
           $logDebug "We found your baby, stay put!"
+          liftIO . atomically . parentSend connection $ "{\"startStreaming\" : true}"
           race_
              (catch (forever writer) printException)
              (catch (forever reader) printException)

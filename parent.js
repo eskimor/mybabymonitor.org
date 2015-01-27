@@ -4,14 +4,6 @@ $(document).ready(connectSocket);
 function connectSocket() {
     logEvent('Connecting ...');
     var connection = new WebSocket(webSockUrl('@{BabyConnectChannelR "baby"}'), [])
-    connection.onopen = function (e) {
-        try {
-            startStreaming(connection);
-        }
-        catch(e) {
-            logErrorRetry("Sending startStreaming failed (readyState: " + connection.readyState + "): " + e);
-        }
-    }
     connection.onclose = function (e) {
         logEvent("Connection closed: " + e);
     }
@@ -103,16 +95,6 @@ function logErrorRetry(e) {
     logError(e + ", retrying in 10 seconds ...");
     retryConnect();
 }
-
-function startStreaming(connection) {
-    logEvent("Sending startStreaming ...");
-    connection.send(JSON.stringify(
-        {
-            'startStreaming' : true
-        }
-    ))
-}
-
 
 function createAnswer(peerConnection, connection) {
     return function () {
