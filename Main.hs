@@ -59,35 +59,39 @@ data BabyPhone = BabyPhone {
 
 getHomeR :: Handler Html
 getHomeR =  do
-             address <- getClientAddress
-             BabyPhone connections <- getYesod
-             babies <- liftIO . atomically $ fmap fst . flip getBabies address <$> readTVar connections 
+             babies <- retrieveBabies
+             ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm (Just "baby")
+             ((_, parentWidget), parentEncType) <- generateFormGet $ parentForm babies
              defaultLayout $(whamletFile "home.html")
 
 
 getBabyR :: Handler Html
-getBabyR = defaultLayout $ do
+getBabyR = do
+  ((result, _), _) <- runFormGet $ babyForm (Just "baby")
+  let babyName = case result of
+                    FormSuccess n -> n
+                    _ -> "baby"
+  defaultLayout $ do
              $(whamletFile "baby.html")
              toWidget $(juliusFile "baby.js")
              toWidget $(juliusFile "common.js")
              addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
 
 getParentR :: Handler Html
-getParentR = defaultLayout $ do
-             $(whamletFile "parent.html")
-             toWidget $(juliusFile "parent.js")
-             toWidget $(juliusFile "common.js")
-             addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
+getParentR = do
+  ((result, parentWidget), parentEncType) <- retrieveBabies >>= runFormGet . parentForm 
+  let babyName = case result of
+                   FormSuccess n -> n
+                   _ -> "baby"
+  defaultLayout $ do
+               $(whamletFile "parent.html")
+               toWidget $(juliusFile "parent.js")
+               toWidget $(juliusFile "common.js")
+               addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
 
 
 getBabiesR :: Handler TypedContent
-getBabiesR = do
-  address <- getClientAddress
-  BabyPhone connections <- getYesod
-  babies <- liftIO . atomically $ do
-            c <- readTVar connections
-            return $ fmap fst . getBabies c $ address
-  selectRep $ provideRep $ returnJson babies
+getBabiesR = do retrieveBabies >>= selectRep . provideRep . returnJson
 
 
 babyWaiting :: BabyName -> WebSocketsT Handler ()
@@ -151,6 +155,21 @@ getBabyOpenChannelR = webSockets . babyWaiting
 getBabyConnectChannelR :: BabyName -> Handler ()
 getBabyConnectChannelR = webSockets . connectBaby
 
+parentForm :: [BabyName] -> Html -> MForm Handler (FormResult BabyName, Widget)
+parentForm babies = renderDivs $ areq (selectFieldList (zip babies babies)) "Connect to child: " baby
+    where
+      baby = case babies of
+        b:_ -> Just b
+        []  -> Nothing
+
+babyForm :: (Maybe BabyName) ->  Html -> MForm Handler (FormResult BabyName, Widget)
+babyForm n = renderDivs $ areq textField "Start baby monitor for: " n
+
+retrieveBabies :: Handler [BabyName]
+retrieveBabies = do
+  BabyPhone connections <- getYesod
+  address <- getClientAddress
+  liftIO . atomically $ fmap fst . flip getBabies address <$> readTVar connections
 
 main :: IO ()
 main = b >>= warp 3000 

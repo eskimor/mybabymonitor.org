@@ -12,20 +12,13 @@
     tell them apart when connecting your parent device.
 <div id=parent>
     <h2> Parent
-    <form>
-        $if null babies
-            I am sorry, but you don't have any baby at
-            all. If you really think you have one, you might want to
-            refresh this page.
-        $else
-            Connect to child: <br>
-            <select id='babyChoice'>
-                $forall baby <- babies
-                    <option value='#{baby}'>#{baby}
-            <button type='button' id="connectBabyButton"> Connect
+    <form method=get action=@{ParentR} enctype=#{parentEncType}>
+        ^{parentWidget}
+        <button type='submit' id="connectBabyButton"> Connect
 
 <div id=baby>
     <h2> Baby
-    Start baby phone for
-    <input type='text' id='babyPhoneButton'>
+    <form method=get action=@{BabyR} enctype=#{parentEncType}>
+        ^{babyWidget}
+        <button type='submit'> Start baby monitor
 

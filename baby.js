@@ -13,7 +13,7 @@ $(document).ready(
 function openSocket(stream) {
     var connection = null;
     try {
-        connection = new WebSocket(webSockUrl('@{BabyOpenChannelR "baby"}'), []);
+        connection = new WebSocket(webSockUrl('@{BabyOpenChannelR babyName}'), []);
     }
     catch (e) {
         logErrorRetry("Error when creating WebSocket: " + e, stream);

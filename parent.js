@@ -3,7 +3,7 @@ $(document).ready(connectSocket);
 
 function connectSocket() {
     logEvent('Connecting ...');
-    var connection = new WebSocket(webSockUrl('@{BabyConnectChannelR "baby"}'), [])
+    var connection = new WebSocket(webSockUrl('@{BabyConnectChannelR babyName}'), [])
     connection.onclose = function (e) {
         logEvent("Connection closed: " + e);
     }
