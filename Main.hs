@@ -30,6 +30,7 @@ import Data.Monoid ((<>))
 import Yesod.Core.Json
 import Control.Monad.Reader (ask)
 import qualified Data.Text.IO as TIO
+import Data.Maybe (fromMaybe)
 
 import BabyCommunication
 
@@ -48,6 +49,8 @@ mkYesod "BabyPhone" [parseRoutes|
 instance Yesod BabyPhone where
     approot = ApprootStatic "http://localhost:3000"
     shouldLog _ _ _ = True -- good for development
+    makeSessionBackend _ = Just <$> defaultClientSessionBackend minutes "client_session_key.aes"
+                           where minutes = 5256000 -- 10 years ~ forever 
 
 instance RenderMessage BabyPhone FormMessage where
     renderMessage _ _ = defaultFormMessage
@@ -60,7 +63,8 @@ data BabyPhone = BabyPhone {
 getHomeR :: Handler Html
 getHomeR =  do
              babies <- retrieveBabies
-             ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm (Just "baby")
+             babyName <- lookupSession "babyName"
+             ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm babyName
              ((_, parentWidget), parentEncType) <- generateFormGet $ parentForm babies
              defaultLayout $(whamletFile "home.html")
 
@@ -71,6 +75,7 @@ getBabyR = do
   let babyName = case result of
                     FormSuccess n -> n
                     _ -> "baby"
+  setSession "babyName" babyName
   defaultLayout $ do
              $(whamletFile "baby.html")
              toWidget $(juliusFile "baby.js")
