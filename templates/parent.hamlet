@@ -1,0 +1,7 @@
+!!!
+<h1> Your cute #{babyName}:
+<video id="remoteVideo" autoplay> 
+<audio id="remoteAudio" autoplay> 
+
+<h1> Event log:
+
