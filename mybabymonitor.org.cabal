@@ -115,7 +115,7 @@ test-suite test
                 TupleSections
 
     build-depends: base
-                 , babyphone
+                 , mybabymonitor-org
                  , yesod-test >= 1.4.2 && < 1.5
                  , yesod-core
                  , yesod
