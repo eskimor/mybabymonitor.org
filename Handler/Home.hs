@@ -1,27 +1,20 @@
 module Handler.Home where
 
 import Import
-import Yesod.Form.Bootstrap3 (BootstrapFormLayout (..), renderBootstrap3,
-                              withSmallInput)
 import Yesod.WebSockets
-import qualified Network.WebSockets as WS
-import Network.Socket (SockAddr(..), PortNumber(..), HostAddress(..))
-import Text.Julius
+import Network.Socket (SockAddr(..), PortNumber(..))
 
 import BabyPhone.BabyCommunication
 import qualified Handler.Session as S
+import Handler.Common
 
--- This is a handler function for the GET request method on the HomeR
--- resource pattern. All of your resource patterns are defined in
--- config/routes
---
--- The majority of the code you will write in Yesod lives in these handler
--- functions. You can spread them across multiple files if you are so
--- inclined, or create a single monolithic file.
+
 getHomeR :: Handler Html
 getHomeR = do
   babies <- retrieveBabies
   babyName <- S.lookupSession S.BabyName
+  intro:baby:parent:[] <- sequence . take 3 . repeat $ newIdent
+  
   ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm babyName
   ((_, parentWidget), parentEncType) <- generateFormGet $ parentForm babies
   defaultLayout $ do
@@ -33,22 +26,21 @@ getBabyR :: Handler Html
 getBabyR = do
   ((result, _), _) <- runFormGet $ babyForm (Just "baby")
   let babyName = case result of
-                    FormSuccess n -> n
+                    FormSuccess (Just n) -> n
                     _ -> "baby"
   S.setSession S.BabyName babyName
   defaultLayout $ $(widgetFile "baby") >> babyParentCommon
 
 getParentR :: Handler Html
 getParentR = do
-  ((result, parentWidget), parentEncType) <- retrieveBabies >>= runFormGet . parentForm 
+  ((result, _), _) <- retrieveBabies >>= runFormGet . parentForm 
   let babyName = case result of
                    FormSuccess n -> n
                    _ -> "baby"
   defaultLayout $ $(widgetFile "parent") >> babyParentCommon
 
 babyParentCommon :: Widget
-babyParentCommon = $(widgetFile "common") 
-                   >> addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"
+babyParentCommon = $(widgetFile "common") >> jqueryLib
 
 getBabiesR :: Handler TypedContent
 getBabiesR = do retrieveBabies >>= selectRep . provideRep . returnJson
@@ -122,8 +114,9 @@ parentForm babies = renderDivs $ areq (selectFieldList (zip babies babies)) "Con
         b:_ -> Just b
         []  -> Nothing
 
-babyForm :: (Maybe BabyName) ->  Html -> MForm Handler (FormResult BabyName, Widget)
-babyForm n = renderDivs $ areq textField "Start baby monitor for: " n
+
+babyForm :: (Maybe BabyName) ->  Html -> MForm Handler (FormResult (Maybe BabyName), Widget)
+babyForm n = renderDivs $ aopt textField "Start baby monitor for: " (Just n)
 
 retrieveBabies :: Handler [BabyName]
 retrieveBabies = do
@@ -135,6 +128,7 @@ retrieveBabies = do
 getClientAddress :: Handler SockAddr
 --getClientAddress = filterPort . remoteHost <$> waiRequest
 getClientAddress = return $ SockAddrUnix ""
+
 
 filterPort :: SockAddr -> SockAddr
 filterPort (SockAddrInet _ address) = SockAddrInet (PortNum 0) address
