@@ -1,0 +1,32 @@
+body {
+    position: absolute;
+    left: 20px;
+    right: 20px;
+    top: 20px;
+    bottom: 20px;
+}
+h1 {
+    text-align: center
+}
+
+##{intro} {
+    position: absolute;
+    height: 50%;
+    width: 100%;
+    float: left;
+    overflow: auto;
+}
+
+##{parent} {
+    height: 50%;
+    width: 50%;
+    float: left;
+    text-align: left;
+}
+
+##{baby} {
+    height: 50%;
+    width: 50%;
+    float: right;
+    text-align: left;
+}

@@ -1,6 +1,6 @@
 !!!
-<h1> Baby phone
-<div id=intro>
+<h1> mybabymonitor.org
+<div id=#{intro}>
     You need a recent browser for this baby phone to
     work. It was tested on Firefox and Chrome and is designed for usual
     private home networks. So if you have a WiFi router and two devices
@@ -10,15 +10,18 @@
     concerned about privacy. You can change the name of your baby below,
     either for adding a personal touch or, if you have more than one, to
     tell them apart when connecting your parent device.
-<div id=parent>
+<div id=#{parent}>
     <h2> Parent
-    <form method=get action=@{ParentR} enctype=#{parentEncType}>
-        ^{parentWidget}
-        <button type='submit' id="connectBabyButton"> Connect
+    $if null babies
+        <p> I am sorry, you don't have have any babies yet. Make some, it is fun!
+    $else
+        <form method=get action=@{ParentR} enctype=#{parentEncType}>
+            ^{parentWidget}
+            <button type='submit' id="connectBabyButton"> Connect
 
-<div id=baby>
+<div id=#{baby}>
     <h2> Baby
-    <form method=get action=@{BabyR} enctype=#{parentEncType}>
+    <form method=get action=@{BabyR} enctype=#{babyEncType}>
         ^{babyWidget}
         <button type='submit'> Start baby monitor
 
