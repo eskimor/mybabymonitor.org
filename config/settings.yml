@@ -17,5 +17,5 @@ ip-from-header: "_env:IP_FROM_HEADER:false"
 # mutable-static: false
 # skip-combining: false
 
-copyright: "Robert Klotzner robert.klotznerATgmx.at"
+copyright: "copyright by Robert Klotzner"
 #analytics: UA-YOURCODE

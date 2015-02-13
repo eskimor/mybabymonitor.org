@@ -16,11 +16,11 @@ function gotLocalIceCandidate(connection) {
     }           
 }
 function logEvent(t) {
-    $('body').append("<p>" + t +"</p>");
+    $("##{rawJS eventLog}").append("<p>" + t +"</p>");
 }
 
 function logError(e) {
-    $('body').append("<p class='error'>" + e +"</p>");
+    $("##{rawJS eventLog}").append("<p class='error'>" + e +"</p>");
 }
 
 function logErrorF(m) {

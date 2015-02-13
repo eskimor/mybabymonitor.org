@@ -4,4 +4,4 @@
 <audio id="remoteAudio" autoplay> 
 
 <h1> Event log:
-
+<div ##{eventLog}>

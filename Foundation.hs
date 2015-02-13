@@ -49,8 +49,6 @@ instance Yesod App where
 
     defaultLayout widget = do
         master <- getYesod
-        mmsg <- getMessage
-
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
@@ -58,7 +56,8 @@ instance Yesod App where
         -- you to use normal widget features in default-layout.
 
         pc <- widgetToPageContent $ do
-            addStylesheet $ StaticR css_bootstrap_css
+        --    addStylesheet $ StaticR css_bootstrap_css
+            jqueryMobileLib
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
@@ -108,3 +107,13 @@ instance RenderMessage App FormMessage where
 -- https://github.com/yesodweb/yesod/wiki/Sending-email
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
+
+jqueryLib :: Widget
+jqueryLib = addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"
+
+
+jqueryMobileLib :: Widget
+jqueryMobileLib = do
+  jqueryLib
+  addScriptRemote "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"
+  addStylesheetRemote "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"

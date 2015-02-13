@@ -1,0 +1,10 @@
+<h1> mybabymonitor.org
+<h2> #{tshow p}
+<div data-role=navbar> 
+    <ul>
+        $forall h <- [Home, Donate, Faq, About]
+            <li>
+                $if linkExt h
+                    <a href=@{HomeR}##{headingId h} data-ajax="false" #{markSelected h}> #{tshow h}
+                $else
+                    <a href=##{headingId h} #{markSelected h}> #{tshow h}

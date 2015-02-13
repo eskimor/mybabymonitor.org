@@ -1,4 +1,5 @@
-!!!
-<h1> Baby event log:
+<h2> Baby event log:
+<div ##{eventLog}>
+
 
 

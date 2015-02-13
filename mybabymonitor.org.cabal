@@ -21,6 +21,8 @@ library
                      Handler.Common
                      Handler.Home
                      Handler.Session
+                     Handler.Baby
+                     Handler.Parent
                      BabyPhone.BabyCommunication
 
     if flag(dev) || flag(library-only)

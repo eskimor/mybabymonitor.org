@@ -1,0 +1,7 @@
+#headerButtons {
+    text-align: center;
+}
+
+#copyRight {
+    text-align: center;
+}
