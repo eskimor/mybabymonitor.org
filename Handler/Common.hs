@@ -46,11 +46,12 @@ instance Show HeadingPage where
 heading :: HeadingPage -> Widget
 heading p = $(widgetFile "heading")
     where
+      isExt = linkExt p
       linkExt Baby = True
       linkExt Parent = True
       linkExt _ = False
-
-      markSelected p' = if p' == p then "class=\"ui-btn-active\"" else ""
+      markSelected :: HeadingPage -> Text
+      markSelected p' = if p' == p then "ui-btn-active" else ""
 
 
 --retrieveBabies :: MonadHandler m => m [BabyName]

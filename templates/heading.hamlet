@@ -4,7 +4,7 @@
     <ul>
         $forall h <- [Home, Donate, Faq, About]
             <li>
-                $if linkExt h
-                    <a href=@{HomeR}##{headingId h} data-ajax="false" #{markSelected h}> #{tshow h}
+                $if isExt
+                    <a href=@{HomeR}##{headingId h} data-ajax="false" class=#{markSelected h}> #{tshow h}
                 $else
-                    <a href=##{headingId h} #{markSelected h}> #{tshow h}
+                    <a href=##{headingId h} class=#{markSelected h}> #{tshow h}

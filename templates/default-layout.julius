@@ -1,0 +1,11 @@
+$(document).ready(
+    function () {
+        adjustDocumentSize();
+        $(window).resize(adjustDocumentSize);
+    }
+)
+
+function adjustDocumentSize() {
+    $("body").width($(window).width());
+    $("body").height($(window).height());
+}

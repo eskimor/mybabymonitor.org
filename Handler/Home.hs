@@ -17,8 +17,7 @@ getHomeR = do
   
   ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm babyName
   ((_, parentWidget), parentEncType) <- generateFormGet $ parentForm babies
-  defaultLayout $ do
-             layout Home $(widgetFile "home")
+  defaultLayout $ layout Home $(widgetFile "home")
 
     
     

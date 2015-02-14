@@ -1,0 +1,4 @@
+##{eventLog} {
+    height : 50%;
+    overflow : auto;
+}
