@@ -1,0 +1,18 @@
+
+##{headingId pageName} {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+}
+
+.ui-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1 1 auto;
+}
+
+.footer {
+    text-align: center;
+}

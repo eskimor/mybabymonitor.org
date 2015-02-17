@@ -8,20 +8,21 @@
     concerned about privacy. You can change the name of your baby below,
     either for adding a personal touch or, if you have more than one, to
     tell them apart when connecting your parent device.
-<div id=#{parent}>
-    <h2> Parent
-    $if null babies
-        <p> I am sorry, you don't have have any babies yet. Make some, it is fun!
-    $else
-        <form method=get action=@{ParentR} enctype=#{parentEncType} data-ajax="false">
-            <div class="ui-field-contain">
-                ^{parentWidget}
-            <button type='submit' id="connectBabyButton"> Connect
+<div ##{parentBaby}>
+    <div id=#{parent}>
+        <h2> Parent
+        $if null babies
+            <p> I am sorry, you don't have have any babies yet. Make some, it is fun!
+        $else
+            <form method=get action=@{ParentR} enctype=#{parentEncType} data-ajax="false">
+                <div class="ui-field-contain">
+                    ^{parentWidget}
+                <button type='submit' id="connectBabyButton"> Connect
 
-<div id=#{baby}>
-    <h2> Baby
-    <form method=get action=@{BabyR} enctype=#{babyEncType} data-ajax="false">
-        <div class="ui-field-contain">
-            ^{babyWidget}
-        <button type='submit'> Start baby monitor
+    <div id=#{baby}>
+        <h2> Baby
+        <form method=get action=@{BabyR} enctype=#{babyEncType} data-ajax="false">
+            <div class="ui-field-contain">
+                ^{babyWidget}
+            <button type='submit'> Start baby monitor
 

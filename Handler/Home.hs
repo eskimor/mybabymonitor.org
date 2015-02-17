@@ -13,7 +13,7 @@ getHomeR :: Handler Html
 getHomeR = do
   babies <- retrieveBabies
   babyName <- S.lookupSession S.BabyName
-  intro:baby:parent:[] <- sequence . take 3 . repeat $ newIdent
+  intro:baby:parent:parentBaby:[] <- sequence . take 4 . repeat $ newIdent
   
   ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm babyName
   ((_, parentWidget), parentEncType) <- generateFormGet $ parentForm babies

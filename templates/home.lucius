@@ -1,15 +1,14 @@
 ##{parent} {
-    height: 50%;
-    width: 50%;
-    float: left;
     text-align: left;
+    flex: 1 1 auto;
 }
 
 ##{baby} {
-    height: 50%;
-    width: 50%;
-    float: right;
     text-align: left;
+    flex: 1 1 auto;
 }
 
     
+##{parentBaby} {
+    display: flex;
+}
