@@ -1,8 +1,9 @@
 <div data-role=page ##{headingId pageName}>
-    <div data-role=header .header>
-        ^{heading pageName}
-    <div data-role=main .ui-content>
-        ^{pageContent}
-    <div data-role=footer .footer>
-        #{appCopyright $ appSettings master}
+    <div .pageContainer>
+        <div data-role=header .header>
+            ^{heading pageName}
+        <div data-role=main .ui-content>
+            ^{pageContent}
+        <div data-role=footer .footer>
+            #{appCopyright $ appSettings master}
     

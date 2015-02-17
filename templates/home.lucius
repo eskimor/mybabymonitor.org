@@ -1,14 +1,12 @@
 ##{parent} {
     text-align: left;
-    flex: 1 1 auto;
 }
 
 ##{baby} {
     text-align: left;
-    flex: 1 1 auto;
 }
 
-    
 ##{parentBaby} {
-    display: flex;
+    margin-bottom: auto;
 }
+    
