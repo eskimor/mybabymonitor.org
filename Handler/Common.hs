@@ -3,9 +3,12 @@ module Handler.Common where
 
 import Data.FileEmbed (embedFile)
 import Network.Socket (SockAddr(..), PortNumber(..))
-import BabyPhone.BabyCommunication
+import BabyPhone.BabyCommunication hiding (SockAddr)
 import Import
 import Text.Julius (rawJS)
+import Network.Wai (remoteHost)
+import qualified Network.Wai as Wai
+import qualified Handler.Session as S
 
 -- These handlers embed files in the executable at compile time to avoid a
 -- runtime dependency, and for efficiency.
@@ -67,9 +70,27 @@ getBabiesR = retrieveBabies >>= selectRep . provideRep . returnJson
 babyParentCommon :: Text -> Widget
 babyParentCommon eventLog = $(widgetFile "common")
 
-getClientAddress :: MonadHandler m => m SockAddr
---getClientAddress = filterPort . remoteHost <$> waiRequest
-getClientAddress = return $ SockAddrUnix ""
+getClientAddress :: Handler ByteString
+getClientAddress = do
+  isReverseProxy <- appIpFromHeader . appSettings <$> getYesod
+  if isReverseProxy
+    then
+        do
+          req <- waiRequest
+          let headers = Wai.requestHeaders req
+          let forwarded = lookup "X-Forwarded-For" headers
+          $logDebug $ "Got forwarded IP: " <> tshow forwarded
+          case forwarded of
+            Nothing -> do
+                     clientIP <-  S.lookupSession S.ClientIP
+                     case clientIP of
+                       Nothing -> notFound
+                       Just ip -> return $ encodeUtf8 ip
+            Just forwarded' -> do
+                           S.setSession S.ClientIP . decodeUtf8 $ forwarded'
+                           return forwarded'
+    else
+        fromString . show . filterPort . remoteHost <$> waiRequest
 
 
 

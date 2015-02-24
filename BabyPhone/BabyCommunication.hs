@@ -12,15 +12,16 @@ module BabyPhone.BabyCommunication (
                          , popBabyConnection
                          , dropBabyConnection
                          , emptyConnections
+                         , SockAddr
                          ) where
                           
 import Control.Concurrent.STM.TQueue
 import qualified Data.Text as T
 import Control.Concurrent.STM
 import qualified Data.Map.Strict as M
-import Network.Socket (SockAddr)
 import ClassyPrelude
 
+type SockAddr = ByteString
 newtype BabyConnection = BabyConnection (
                                          TQueue Text -- baby in
                                         , TQueue Text -- baby out

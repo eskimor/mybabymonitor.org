@@ -3,7 +3,6 @@ module Handler.Baby where
 import Import
 
 import Yesod.WebSockets
-import Network.Socket (SockAddr(..))
 
 import BabyPhone.BabyCommunication
 import qualified Handler.Session as S
