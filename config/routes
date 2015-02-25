@@ -7,5 +7,5 @@
 /baby BabyR GET
 /parent ParentR GET
 /babies BabiesR GET
-/babyOpenChannel/#Text BabyOpenChannelR GET -- Opened by the baby
-/babyConnectChannel/#Text BabyConnectChannelR GET -- Connected by the parent
+/ws/babyOpenChannel/#Text BabyOpenChannelR GET -- Opened by the baby
+/ws/babyConnectChannel/#Text BabyConnectChannelR GET -- Connected by the parent

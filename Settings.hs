@@ -63,7 +63,7 @@ instance FromJSON AppSettings where
         appRoot                   <- o .: "approot"
         appHost                   <- fromString <$> o .: "host"
         appPort                   <- o .: "port"
-        appIpFromHeader           <- o .: "ip-from-header"
+        appIpFromHeader           <- o .: "ip-from-header"  
 
         appDetailedRequestLogging <- o .:? "detailed-logging" .!= defaultDev
         appShouldLogAll           <- o .:? "should-log-all"   .!= defaultDev

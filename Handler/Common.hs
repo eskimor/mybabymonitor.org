@@ -82,12 +82,10 @@ getClientAddress = do
           $logDebug $ "Got forwarded IP: " <> tshow forwarded
           case forwarded of
             Nothing -> do
-                     clientIP <-  S.lookupSession S.ClientIP
-                     case clientIP of
-                       Nothing -> notFound
-                       Just ip -> return $ encodeUtf8 ip
+              $logError "Server is configured to use \"X-Forwarded-For\", but none found - fatal. (Security risk!)"
+              error "Server is not configured properly, please contact the administrator."
             Just forwarded' -> do
-                           S.setSession S.ClientIP . decodeUtf8 $ forwarded'
+                           deleteSession "ClientIP" -- Should be removed some time
                            return forwarded'
     else
         fromString . show . filterPort . remoteHost <$> waiRequest
