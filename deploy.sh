@@ -2,6 +2,7 @@
 cabal clean
 cabal configure
 cabal build
+rm static/tmp/*
 scp -r config mybabymonitor.org:
 scp -r static mybabymonitor.org:
 cd dist/build/mybabymonitor.org
