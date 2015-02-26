@@ -13,6 +13,8 @@ module BabyPhone.BabyCommunication (
                          , dropBabyConnection
                          , emptyConnections
                          , SockAddr
+                         , getBabyCount
+                         , BabyCount
                          ) where
                           
 import Control.Concurrent.STM.TQueue
@@ -28,13 +30,14 @@ newtype BabyConnection = BabyConnection (
                                         ) deriving (Eq)
 
 type BabyName = T.Text
+type BabyCount = Int
 
 type Baby = (BabyName, BabyConnection)
-newtype BabyConnections = BabyConnections (M.Map SockAddr ([Baby]))
+data BabyConnections = BabyConnections (M.Map SockAddr ([Baby])) BabyCount
 
 
 emptyConnections :: BabyConnections
-emptyConnections = BabyConnections M.empty
+emptyConnections = BabyConnections M.empty 0
 
 parentSend :: BabyConnection -> T.Text -> STM ()
 parentSend (BabyConnection (babyIn, _)) t = writeTQueue babyIn t
@@ -51,7 +54,7 @@ babyReceive (BabyConnection (babyIn , _)) = readTQueue babyIn
 
 -- Get all the babies registered for a given public IP
 getBabies :: BabyConnections -> SockAddr -> [Baby]
-getBabies (BabyConnections connections) addr =
+getBabies (BabyConnections connections _) addr =
     let
         babies = M.lookup addr connections
     in
@@ -61,8 +64,11 @@ getBabies (BabyConnections connections) addr =
 
 
 addBaby :: BabyConnections -> SockAddr -> Baby -> BabyConnections
-addBaby (BabyConnections connections) addr baby = BabyConnections connections'
+addBaby (BabyConnections connections babyCount) addr baby = BabyConnections connections' (if babyPresent then babyCount else babyCount + 1)
     where
+      babyPresent = case M.lookup addr connections of
+                      Nothing -> False
+                      Just babies -> any ((== name) . fst) babies
       connections' =
           M.insertWith -- Replace any old connection
                (\new old -> new ++ filter ((/= name).fst) old)
@@ -79,21 +85,27 @@ newBaby connections addr name = do
 -- Get rid of a baby, including the addr entry if it was the last baby
 -- for this address
 popBabyConnection :: BabyConnections -> SockAddr -> BabyName -> (Maybe BabyConnection, BabyConnections)
-popBabyConnection bConnections@(BabyConnections connections) addr name =
-    (connection, BabyConnections connections')
+popBabyConnection bConnections@(BabyConnections connections count) addr name =
+    (connection, BabyConnections connections' (count + babyDiff))
   where
     babies = getBabies bConnections addr
     connection = lookup name babies
     babies' = filter (((/=) name) . fst) babies
+    babyDiff = length babies' - length babies
     connections' = updateBabyMap connections addr babies' 
 
 
 dropBabyConnection :: BabyConnections -> SockAddr -> Baby -> BabyConnections
-dropBabyConnection bConnections@(BabyConnections connections) addr baby =
-    BabyConnections connections'
+dropBabyConnection bConnections@(BabyConnections connections count) addr baby =
+    BabyConnections connections' (count + babyDiff)
     where
-      babies' = filter ((/=) baby) (getBabies bConnections addr)
+      babies = getBabies bConnections addr
+      babies' = filter ((/=) baby) babies
+      babyDiff = length babies' - length babies
       connections' = updateBabyMap connections addr babies'
+
+getBabyCount :: BabyConnections -> BabyCount
+getBabyCount (BabyConnections _ count) = count
 
 updateBabyMap :: M.Map SockAddr ([Baby]) -> SockAddr -> [Baby] -> M.Map SockAddr ([Baby])
 updateBabyMap m addr babies = M.update (\_ -> case babies of

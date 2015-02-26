@@ -26,6 +26,7 @@ layout :: HeadingPage -> Widget -> Widget
 layout pageName pageContent = do
   setTitle "mybabymonitor.org - Web based baby monitor"
   master <- getYesod
+  babyCount <-  getBabyCount <$> (atomically . readTVar $ babyConnections master)
   $(widgetFile "layout")
 
 data HeadingPage = Home | Faq | Donate | About | Baby | Parent deriving Eq
@@ -96,3 +97,9 @@ filterPort :: SockAddr -> SockAddr
 filterPort (SockAddrInet _ address) = SockAddrInet (PortNum 0) address
 filterPort (SockAddrInet6 _ flow address scope) = SockAddrInet6 (PortNum 0) flow address scope
 filterPort s = s
+
+
+babiesOnlineText :: BabyCount -> Text
+babiesOnlineText 0 = "All babies are awake and with their parents."
+babiesOnlineText 1 = "One baby online."
+babiesOnlineText n = tshow n <> " babies online."
