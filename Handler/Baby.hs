@@ -7,6 +7,7 @@ import Yesod.WebSockets
 import BabyPhone.BabyCommunication
 import qualified Handler.Session as S
 import Handler.Common
+import Control.Exception.Lifted (onException)
 
 getBabyR :: Handler Html
 getBabyR = do
@@ -33,12 +34,11 @@ babyWaiting name = do
   let reader = (liftIO . atomically . babyReceive) connection >>= sendTextData
   let updateConnections' = updateConnections y addr connection
   race_
-                   (catch (forever writer) updateConnections')
-                   (catch (forever reader) updateConnections')
+                   (onException (forever writer) updateConnections')
+                   (onException (forever reader) updateConnections')
   where
-    updateConnections :: App -> SockAddr ->  BabyConnection -> SomeException -> WebSocketsT Handler ()
-    updateConnections y addr connection e = do
-                     $logDebug $ "Baby end communication exited with exception: " <> tshow e
+    updateConnections :: App -> SockAddr ->  BabyConnection -> WebSocketsT Handler ()
+    updateConnections y addr connection = do
                      liftIO . atomically $ modifyTVar' (babyConnections y)
                           (\bcs -> dropBabyConnection bcs addr (name, connection))
 

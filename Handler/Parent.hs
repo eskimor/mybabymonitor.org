@@ -7,6 +7,7 @@ import Network.Socket (SockAddr(..))
 import BabyPhone.BabyCommunication
 import qualified Handler.Session as S
 import Handler.Common
+import Control.Exception.Lifted (onException)
 
 
 getParentR :: Handler Html
@@ -41,11 +42,9 @@ connectBaby name = do
           $logDebug "We found your baby, stay put!"
           liftIO . atomically . parentSend connection $ "{\"startStreaming\" : true}"
           race_
-             (catch (forever writer) printException)
-             (catch (forever reader) printException)
+             (forever writer)
+             (forever reader) 
     where
-      printException :: SomeException -> WebSocketsT Handler ()
-      printException e = $logDebug $ "Parent end communication exited with exception: " <> tshow e
 
 getBabyConnectChannelR :: BabyName -> Handler ()
 getBabyConnectChannelR = webSockets . connectBaby
