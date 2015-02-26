@@ -84,6 +84,7 @@ library
                  , yesod-websockets
                  , websockets
                  , wai
+                 , lifted-base
 
 executable         mybabymonitor.org
     if flag(library-only)
