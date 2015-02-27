@@ -5,6 +5,6 @@
         <div data-role=main .ui-content>
             ^{pageContent}
         <div data-role=footer .footer>
-            <p> #{babiesOnlineText babyCount}
-            <p> #{appCopyright $ appSettings master}
+            #{babiesOnlineText babyCount} <br/>
+            #{preEscapedToMarkup $ appCopyright $ appSettings master}
     

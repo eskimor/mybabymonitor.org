@@ -18,5 +18,5 @@ should-log-all: true
 # mutable-static: false
 # skip-combining: false
 
-copyright: "copyright by Robert Klotzner"
+copyright: "&copy; by Robert Klotzner"
 #analytics: UA-YOURCODE
