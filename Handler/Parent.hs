@@ -17,7 +17,7 @@ getParentR = do
   let babyName = case result of
                    FormSuccess n -> n
                    _ -> "baby"
-  defaultLayout $ layout Parent $ $(widgetFile "parent") >> babyParentCommon eventLog
+  defaultLayout $  $(widgetFile "parent") >> babyParentCommon eventLog
 
 connectBaby :: BabyName -> WebSocketsT Handler ()
 connectBaby name = do

@@ -17,7 +17,9 @@ getHomeR = do
   
   ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm babyName
   ((_, parentWidget), parentEncType) <- generateFormGet $ parentForm babies
-  defaultLayout $ layout Home $(widgetFile "home")
+  defaultLayout $ do
+             $(widgetFile "home")
+             toWidget [julius| Elm.fullscreen(Elm.Main); |]
 
     
     

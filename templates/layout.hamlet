@@ -1,10 +1,2 @@
-<div data-role=page ##{headingId pageName}>
-    <div .pageContainer>
-        <div data-role=header .header>
-            ^{heading pageName}
-        <div data-role=main .ui-content>
-            ^{pageContent}
-        <div data-role=footer .footer>
-            #{babiesOnlineText babyCount} <br/>
-            #{preEscapedToMarkup $ appCopyright $ appSettings master}
+^{pageContent}
     

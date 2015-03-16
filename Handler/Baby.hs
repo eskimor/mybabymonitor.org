@@ -17,7 +17,7 @@ getBabyR = do
                     FormSuccess (Just n) -> n
                     _ -> "baby"
   S.setSession S.BabyName babyName
-  defaultLayout $ layout Baby $ $(widgetFile "baby") >> babyParentCommon eventLog
+  defaultLayout $  $(widgetFile "baby") >> babyParentCommon eventLog
 
                 
 babyWaiting :: BabyName -> WebSocketsT Handler ()

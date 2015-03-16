@@ -48,7 +48,6 @@ instance Yesod App where
         "config/client_session_key.aes"
 
     defaultLayout widget = do
-        master <- getYesod
         -- We break up the default layout into two components:
         -- default-layout is the contents of the body tag, and
         -- default-layout-wrapper is the entire page. Since the final
@@ -57,7 +56,6 @@ instance Yesod App where
 
         pc <- widgetToPageContent $ do
         --    addStylesheet $ StaticR css_bootstrap_css
-            jqueryMobileLib
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
@@ -71,7 +69,8 @@ instance Yesod App where
     -- and names them based on a hash of their content. This allows
     -- expiration dates to be set far in the future without worry of
     -- users receiving stale content.
-    addStaticContent ext mime content = do
+    addStaticContent _ _ _ = return Nothing
+    {-- addStaticContent ext mime content = do
         master <- getYesod
         let staticDir = appStaticDir $ appSettings master
         addStaticContentExternal
@@ -85,6 +84,7 @@ instance Yesod App where
       where
         -- Generate a unique filename based on the content itself
         genFileName lbs = "autogen-" ++ base64md5 lbs
+    --}
 
     -- What messages should be logged. The following includes all messages when
     -- in development, and warnings and errors in production.
@@ -108,12 +108,5 @@ instance RenderMessage App FormMessage where
 -- https://github.com/yesodweb/yesod/wiki/Serve-static-files-from-a-separate-domain
 -- https://github.com/yesodweb/yesod/wiki/i18n-messages-in-the-scaffolding
 
-jqueryLib :: Widget
-jqueryLib = addScriptRemote "http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"
 
 
-jqueryMobileLib :: Widget
-jqueryMobileLib = do
-  jqueryLib
-  addScriptRemote "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"
-  addStylesheetRemote "http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css"
