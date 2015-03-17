@@ -1,0 +1,24 @@
+#pageContainer {
+    height: 100vh;
+    max-width: 800px;
+    margin-right: auto;
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+#pageContent {
+    flex: 1 1 auto;
+}
+.ui-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1 1 auto;
+    align-items: stretch;
+}
+
+.footer {
+    text-align: center;
+    position: static;
+}

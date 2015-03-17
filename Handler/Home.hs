@@ -3,23 +3,27 @@ module Handler.Home where
 import Import
 
 import qualified Handler.Session as S
+import Text.Julius (rawJS)
 
 import Handler.Common
 import Handler.Baby
 import Handler.Parent
 import BabyPhone.BabyCommunication
 
+
 getHomeR :: Handler Html
 getHomeR = do
   babies <- retrieveBabies
   babyName <- S.lookupSession S.BabyName
+  let navItem = "Baby" :: Text -- Fixme - be more intelligent
+  let babiesOnline = "2" :: Text
   intro:baby:parent:parentBaby:[] <- sequence . take 4 . repeat $ newIdent
   
   ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm babyName
   ((_, parentWidget), parentEncType) <- generateFormGet $ parentForm babies
   defaultLayout $ do
              $(widgetFile "home")
-             toWidget [julius| Elm.fullscreen(Elm.Main); |]
+             $(widgetFile "home-js")
 
     
     
