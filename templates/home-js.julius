@@ -3,4 +3,18 @@ initialData = {
     , "babiesOnline" : #{rawJS babiesOnline}
     , "currentDate" : new Date().getTime()
 }
-Elm.fullscreen(Elm.Main, {"initialJSModel" : initialData})
+
+var storage = null;
+if(localStorage.storage) {
+    JSON.parse(localStorage.storage);
+}
+
+babymonitor = Elm.fullscreen(Elm.Main,
+                             {
+                                 "initialJSModel" : initialData
+                                 , "getStorage" : storage
+                             })
+
+babymonitor.ports.setStorage.subscribe(function(storage) {
+    localStorage.storage = storage.toString();
+})

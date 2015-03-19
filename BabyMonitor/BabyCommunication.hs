@@ -1,4 +1,4 @@
-module BabyPhone.BabyCommunication (
+module BabyMonitor.BabyCommunication (
                           BabyConnection
                          , parentSend
                          , parentReceive

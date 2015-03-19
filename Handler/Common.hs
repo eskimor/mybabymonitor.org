@@ -3,7 +3,7 @@ module Handler.Common where
 
 import Data.FileEmbed (embedFile)
 import Network.Socket (SockAddr(..), PortNumber(..))
-import BabyPhone.BabyCommunication hiding (SockAddr)
+import BabyMonitor.BabyCommunication hiding (SockAddr)
 import Import
 import Text.Julius (rawJS)
 import Network.Wai (remoteHost)

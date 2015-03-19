@@ -8,7 +8,8 @@ import Text.Julius (rawJS)
 import Handler.Common
 import Handler.Baby
 import Handler.Parent
-import BabyPhone.BabyCommunication
+import Yesod.WebSockets
+import BabyMonitor.BabyCommunication
 
 
 getHomeR :: Handler Html
@@ -17,6 +18,7 @@ getHomeR = do
   babyName <- S.lookupSession S.BabyName
   let navItem = "Baby" :: Text -- Fixme - be more intelligent
   let babiesOnline = "2" :: Text
+  webSockets clientSocket
   intro:baby:parent:parentBaby:[] <- sequence . take 4 . repeat $ newIdent
   
   ((_, babyWidget), babyEncType) <- generateFormGet $ babyForm babyName
@@ -27,7 +29,9 @@ getHomeR = do
 
     
     
-
+clientSocket :: WebSocketsT Handler ()
+clientSocket = return ()
+  
 
 
   

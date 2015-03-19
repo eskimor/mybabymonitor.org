@@ -4,7 +4,7 @@ import Import
 
 import Yesod.WebSockets
 
-import BabyPhone.BabyCommunication
+import BabyMonitor.BabyCommunication
 import qualified Handler.Session as S
 import Handler.Common
 import Control.Exception.Lifted (onException)

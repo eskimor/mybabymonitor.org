@@ -23,7 +23,7 @@ library
                      Handler.Session
                      Handler.Baby
                      Handler.Parent
-                     BabyPhone.BabyCommunication
+                     BabyMonitor.BabyCommunication
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT
