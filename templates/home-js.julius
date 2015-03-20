@@ -1,7 +1,8 @@
 initialData = {
-    "selectedNavItem" : "#{rawJS navItem}"
+    "selectedNavigation" : "#{rawJS navItem}"
     , "babiesOnline" : #{rawJS babiesOnline}
     , "currentDate" : new Date().getTime()
+    , "isGrouped" : #{isGrouped}
 }
 
 var storage = null;
@@ -11,7 +12,7 @@ if(localStorage.storage) {
 
 babymonitor = Elm.fullscreen(Elm.Main,
                              {
-                                 "initialJSModel" : initialData
+                                 "serverInput" : initialData
                                  , "getStorage" : storage
                              })
 

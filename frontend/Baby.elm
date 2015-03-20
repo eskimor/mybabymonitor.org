@@ -6,13 +6,13 @@ import Signal
 
 
 
-type alias State = {
-      connection : ConnectionState
+type alias Model = {
+      connection : ConnectionModel
     , babyName : String
     , userGuide : List String
     }
 
-type ConnectionState = Stopped
+type ConnectionModel = Stopped
                      | Started
                      | Authorized
                      | WaitingForParent
@@ -23,8 +23,8 @@ type ConnectionState = Stopped
             
 type Error = AuthorizationError | NoServerConnection 
 
-initialState : Storage -> State
-initialState storage = { connection = Stopped    
+initialModel : Storage -> Model
+initialModel storage = { connection = Stopped    
                , babyName = storage.babyName
                , userGuide = []
                }
@@ -39,7 +39,7 @@ emptyStorage = {
       babyName = ""
     }
 
-view : State -> Html
+view : Model -> Html
 view _ =
     div []
         [

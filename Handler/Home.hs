@@ -16,8 +16,9 @@ getHomeR :: Handler Html
 getHomeR = do
   babies <- retrieveBabies
   babyName <- S.lookupSession S.BabyName
-  let navItem = "Baby" :: Text -- Fixme - be more intelligent
+  let navItem = "Grouping" :: Text -- Fixme - be more intelligent
   let babiesOnline = "2" :: Text
+  let isGrouped = True
   webSockets clientSocket
   intro:baby:parent:parentBaby:[] <- sequence . take 4 . repeat $ newIdent
   

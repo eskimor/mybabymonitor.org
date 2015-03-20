@@ -13,112 +13,54 @@ import Maybe (withDefault, Maybe)
 
 import Server
 import Baby
+import Util.NavigationBar as NavBar
 
-type NavItem = Baby | Parent
+-- Model:
 
-type alias Action = State -> State
+type alias Action = Model -> Model
     
-type alias State = {
-      selectedNavItem : NavItem
+type alias Model = {
+    navBar : NavBar.Model
     , babiesOnline : Int
     , availableBabies : List String
     , currentDate : Date.Date
     , serverError : String
+    , isGrouped : Bool
     }
 
 
--- Actions:
-selectNavItem : NavItem -> Action
-selectNavItem item model = { model | selectedNavItem <- item }
+init : Model
+init =
+    { navBar = NavBar.init
+                    serverInput.selectedNavigation
+                    [ "Baby","Parent","Grouping" ]
+    , babiesOnline = serverInput.babiesOnline
+    , availableBabies = []
+    , currentDate = Date.fromTime(serverInput.currentDate)
+    , serverError = ""
+    , isGrouped = serverInput.isGrouped
+    }
 
-updateDate : Time.Time -> Action
-updateDate time model = { model | currentDate <- Date.fromTime time }
----
-step : Action -> State -> State
-step = identity
-
--- View:
-view : State -> Html
-view model =
-    div [ id "pageContainer"]
-        [
-         navbar model
-        , div [ id "pageContent" ]
-              [
-               Baby.view (Baby.initialState Baby.emptyStorage)
-              ]
-        , footer [class "navbar navbar-default navbar-fixed-bottom footer"]
-                 [
-                  babiesOnlineText model
-                  , br [] []
-                  , small [] [copyrightNotice model]]
-        ]
-
-
-navbar : State -> Html
-navbar model =
-    nav [ class "navbar navbar-default"] 
-        [
-         div [ class "container-fluid" ]
-             [
-              div [ class "navbar-header" ]
-                  [
-                   a [ class "navbar-brand", href "#" ][ text "mybabymonitor.org" ]
-                   , button [ type' "button", class "navbar-toggle collapsed"
-                          , attribute "data-toggle" "collapse"
-                          , attribute "data-target" "#main-navbar"]
-                          [
-                           srOnly "Toggle navigation"
-                          , span [ class "icon-bar" ][]
-                          , span [ class "icon-bar" ][]
-                          , span [ class "icon-bar" ][]
-                          ]
-                  ]
-             , div [ class "collapse navbar-collapse", id "main-navbar"]
-                   [ 
-                    ul [ class "nav navbar-nav"]
-                       (List.map (navMenuItem model) [Baby, Parent])
-                   ]
-
-             ]
-         ]
-
-navMenuItem : State -> NavItem -> Html
-navMenuItem model item =
-    let active = item == model.selectedNavItem
-    in
-      li [ classList [ ("active", active) ] ]
-         [ a
-           [
-            href "javascript:;"
-           , onClick (Signal.send updates (selectNavItem item))
-           ]
-           [
-            text << toString <| item
-           , srOnly (if active then "current" else "")
-           ]
-         ]
-
-
-babiesOnlineText : State -> Html
-babiesOnlineText model = text <| case model.babiesOnline of
-                           0 -> "All babies are awake and with their parents."
-                           1 -> "One baby online."
-                           n -> toString n ++ " babies online."
-                           
-main : Signal Html
-main = Signal.map view model
-
-model : Signal State
-model = Signal.foldp step initialModel inputSignal
+model : Signal Model
+model = Signal.foldp step init inputSignal
 
 inputSignal : Signal Action
 inputSignal = Signal.mergeMany [
                (fromServer <~ Server.connect)
-              , (Signal.subscribe updates)
+              , (updateNavBar <~ Signal.subscribe NavBar.updates)
               , (updateDate <~ Time.every Time.hour)
               ]
 
+
+
+-- Actions:
+
+updateDate : Time.Time -> Action
+updateDate time model = { model | currentDate <- Date.fromTime time }
+
+updateNavBar : NavBar.Action -> Action
+updateNavBar nact model = { model | navBar <- nact model.navBar }
+                          
 fromServer : Result String Server.Incoming -> Action
 fromServer rmessage model = case rmessage of
                               Err message ->
@@ -129,43 +71,79 @@ fromServer rmessage model = case rmessage of
                                            { model | babiesOnline <- num }
                                        Server.AvailableBabies babies ->
                                            { model | availableBabies <- babies }
-                                          
+                                           
+---
+step : Action -> Model -> Model
+step = identity
 
-               
-updates : Signal.Channel Action
-updates = Signal.channel identity
+-- View:
+view : Model -> Html
+view model =
+    div [ id "pageContainer"]
+        [
+         NavBar.view model.navBar
+        , div [ id "pageContent" ]
+              [
+               viewContent model
+              ]
+        , footer [class "navbar navbar-default navbar-fixed-bottom footer"]
+                 [
+                  viewBabiesOnlineText model
+                  , br [] []
+                  , small [] [viewCopyrightNotice model]]
+        ]
 
 
-type alias JSState = {
-      selectedNavItem : String
+viewContent : Model -> Html
+viewContent model = if (model.navBar.selected == "Baby"
+                        || model.navBar.selected == "Parent")
+                       && not model.isGrouped
+                    then
+                        div [ class "alert alert-info"
+                            , attribute "role" "alert" ]
+                            [
+                             text "In order to ensure that babies can only be watched or heard by their parents, this device needs to be grouped first. Please create or join a group: "
+                            , button [ onClick (Signal.send
+                                                 NavBar.updates
+                                                 (NavBar.selectNavigation "Grouping"))
+                                ]
+                                [ text "Grouping" ]
+                            ]
+                    else
+                        case model.navBar.selected of
+                          "Baby" -> Baby.view (Baby.initialModel Baby.emptyStorage)
+                          _ -> text " Sorry - nothing here yet!"
+                             
+                        
+viewBabiesOnlineText : Model -> Html
+viewBabiesOnlineText model = text <| case model.babiesOnline of
+                           0 -> "All babies are awake and with their parents."
+                           1 -> "One baby online."
+                           n -> toString n ++ " babies online."
+
+viewCopyrightNotice : Model -> Html
+viewCopyrightNotice model = let currentYear = Date.year model.currentDate
+                                startYear = 2015
+                                yearSpan = if currentYear - startYear > 0
+                                           then toString startYear ++ " - " ++ toString currentYear
+                                           else toString startYear
+                            in text <| "copyright by Robert Klotzner " ++ yearSpan
+
+-- Input / output:
+
+main : Signal Html
+main = Signal.map view model
+
+type alias ServerInput = {
+      selectedNavigation : String
     , babiesOnline : Int
     , currentDate : Float
+    , isGrouped : Bool
     }
     
-port initialJSModel : JSState 
+port serverInput : ServerInput
 
-initialModel : State
-initialModel =
-    { selectedNavItem = case initialJSModel.selectedNavItem of
-                                             "Baby" -> Baby
-                                             "Parent" -> Parent
-    , babiesOnline = initialJSModel.babiesOnline
-    , availableBabies = []
-    , currentDate = Date.fromTime(initialJSModel.currentDate)
-    , serverError = ""
-    }
 
-copyrightNotice : State -> Html
-copyrightNotice model = let currentYear = Date.year model.currentDate
-                            startYear = 2015
-                            yearSpan = if currentYear - startYear > 0
-                                       then toString startYear ++ " - " ++ toString currentYear
-                                       else toString startYear
-                        in text <| "copyright by Robert Klotzner " ++ yearSpan
-
--- Screen reader only:
-srOnly : String -> Html
-srOnly t = span [ class "sr-only" ][ text t ]
 
 type alias Storage = {
       baby : Baby.Storage
