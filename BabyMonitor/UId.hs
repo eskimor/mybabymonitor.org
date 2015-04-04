@@ -1,4 +1,4 @@
-module UId where
+module BabyMonitor.UId (makeUid, fromUserString, toUserString, Uid) where
 
 -- We are using System.UUID instead of Data.UUID because it generates
 -- higher quality uuids. (At least the clock field is randomized)
@@ -23,7 +23,7 @@ import Data.Binary
 -- ids. 10 bytes is still pretty long and we will use a base 32 code to
 -- reduce it to 16 displayed digits, which is manageable.
 
-newtype Uid = Uid ByteString deriving (Show, Read)
+newtype Uid = Uid ByteString 
 
 
 -- Convert an uid to a string suitable to be displayed to a user
