@@ -1,4 +1,4 @@
-module BabyMonitor.UId (makeUid, fromUserString, toUserString, Uid) where
+module BabyMonitor.UId (makeUId, fromUserString, toUserString, UId) where
 
 -- We are using System.UUID instead of Data.UUID because it generates
 -- higher quality uuids. (At least the clock field is randomized)
@@ -22,24 +22,24 @@ import qualified Data.Text as T
 -- ids. 10 bytes is still pretty long and we will use a base 32 code to
 -- reduce it to 16 displayed digits, which is manageable.
 
-newtype Uid = Uid ByteString
+newtype UId = UId ByteString deriving (Eq, Ord)
 
 
 -- Convert an uid to a string suitable to be displayed to a user
-toUserString :: Uid -> Text
-toUserString (Uid uid) = T.intercalate "-" . T.chunksOf 4
+toUserString :: UId -> Text
+toUserString (UId uid) = T.intercalate "-" . T.chunksOf 4
                          . toLower
                          . decodeUtf8 . B32.encode
                          . reverseTimeLow $ uid
 
-fromUserString :: Text -> Maybe Uid
-fromUserString =  fmap (Uid . reverseTimeLow) . rightToMaybe
+fromUserString :: Text -> Maybe UId
+fromUserString =  fmap (UId . reverseTimeLow) . rightToMaybe
                   . B32.decode . encodeUtf8
                   . toUpper
                   . filter (/= '-')
          
-makeUid :: IO Uid
-makeUid = Uid . toStrict . take 10 . encode <$> uuid
+makeUId :: IO UId
+makeUId = UId . toStrict . take 10 . encode <$> uuid
   
 
 
