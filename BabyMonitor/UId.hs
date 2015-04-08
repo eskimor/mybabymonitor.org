@@ -1,4 +1,4 @@
-module BabyMonitor.UId (makeUId, fromUserString, toUserString, UId) where
+module BabyMonitor.UId (make, fromUserString, toUserString, UId) where
 
 -- We are using System.UUID instead of Data.UUID because it generates
 -- higher quality uuids. (At least the clock field is randomized)
@@ -38,8 +38,8 @@ fromUserString =  fmap (UId . reverseTimeLow) . rightToMaybe
                   . toUpper
                   . filter (/= '-')
          
-makeUId :: IO UId
-makeUId = UId . toStrict . take 10 . encode <$> uuid
+make :: IO UId
+make = UId . toStrict . take 10 . encode <$> uuid
   
 
 

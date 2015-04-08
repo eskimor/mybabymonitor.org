@@ -1,9 +1,6 @@
-module Client (makeClients
-              , Client
-              , Clients
-              , Family
-              , makeClients
-              , newClient
+module Client (
+               Client
+              , make
               ) where
 
 import ClassyPrelude
@@ -15,85 +12,21 @@ import Control.Concurrent.STM.TMVar
 
 
 import BabyMonitor.UId
+import BabyMonitor.Types
 
-type FamilyId = UId
-type ClientId = UId 
-    
-type ClientMap = Map ClientId Client
-type FamilyMap = Map FamilyId Family
-
-type BabyName = Text
-
-data Client = Client {
-      clientId :: ClientId
-    , babyName :: Maybe Text
-    , babyStarted :: Bool
-    , toClient :: TQueue Text
-    }
-
-data Family = Family {
-      familyId :: FamilyId
-    , clients :: ClientMap
-    , babiesOnline :: Map BabyName Client
-    }
+data Messages =
+    HandleInvitation Text -- stringified id of invitation sender
+  | InvitedClientNotFound Text -- id of not found client
+{--
+  Messages:
+  - Server - Client:
+    - handleInvitation: Argument: Inviter id - Just inform the client
+      that he got invited to a family. He can then choose to send:
+      discardInvation or visit the receiveInvitation page, followed by a
+      websocket reconnect.
 
 
-
-data Clients = Clients {
-      singles :: ClientMap -- Clients which are not yet in a family
-    , families :: FamilyMap
-    , invitations :: Map ClientId FamilyId
-    , nextClientId :: TMVar UId
-    , nextFamilyId :: TMVar UId
-    }
-
-
-makeClients :: IO Clients
-makeClients = do
-  (id1, id2) <- (,) <$> makeUId <*> makeUId
-  clients <- atomically
-             $ Clients M.empty M.empty M.empty
-             <$> newTMVar id1
-             <*> newTMVar id2
-  forkIO $ forever $ fillId (nextClientId clients)
-  forkIO $ forever $ fillId (nextFamilyId clients)
-  return clients
-
-  
-newClient :: Clients -> STM (Client, Clients)
-newClient cs = do
-  client <- takeTMVar (nextClientId cs) >>= makeClient
-  let clients' = M.insert (clientId client) client (singles cs)
-  return (client, cs { singles = clients'})
-
-
--- Only singles can be invited to a family. If the given client id is no longer single this function does nothing and therefore also returns Nothing to make that clear.
-inviteFamilyMember :: Family -> ClientId -> Clients -> STM (Maybe Clients)
-inviteFamilyMember family clientId clients =
-  let
-    (single, clients') = removeSingle clientId clients
-  in
-    return $ do  -- To be continued ... 
-      client <- single
-      return $ clients' { invitations = M.insert (familyId family) clientId (invitations clients') }
-
--- Private - not to be exported:
-
-makeClient :: ClientId -> STM Client
-makeClient uid = Client uid Nothing False <$> newTQueue
-
-
-
-fillId :: TMVar UId -> IO ()
-fillId mvar = makeUId >>= atomically . putTMVar mvar
-
-removeSingle :: ClientId -> Clients -> (Maybe Client, Clients)
-removeSingle clientId clients = 
-                let
-                    (client, singles') = M.updateLookupWithKey deleteSingle clientId (singles clients)
-                    deleteSingle _ _ = Nothing
-                in (client, clients { singles = singles'})
-
-
-sendInvitation :: Family -> Client -> STM ()
-sendInvitation = error "Not yet implemented"
+--}
+ 
+handleInvitation :: Client -> STM ()
+handleInvitation (Client _ q) = 

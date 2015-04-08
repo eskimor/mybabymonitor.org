@@ -1,0 +1,32 @@
+* Server/Client communication
+** Websocket messages: Server -> Client
+   - HandleInvitation
+     - Argument: Id of the inviter
+     - Synopsis: The client is made aware that he has been invited to
+       join a family. The client can then either visit the /joinFamily
+       page to accept the invitation or send the DeclineInvitation
+       message back to the server.
+   - InvitedClientNotFound
+     - Argument: Id of the not-found client
+     - Synopsis: The user should be informed about this problem.
+** Websocket messages: Client -> Server
+   - DeclineInvitation
+     - Argument: Id of inviter as found in the original HandleInvitation message
+     - Synopsis: Server will remove the client from the invitations
+       map and add it back to the singles map. Making him available
+       for further invitations. The id argument is ignored for now. 
+   - InviteClient
+     - Argument: Id of the client to be invited.
+     - Synopsis: 
+       - If received id can be found in singles: The id of the invited
+         client is removed and put into invitations. So the invited
+         client can not receive any further invitations, until he
+         declines. Then the server sends a HandleInvitation message to
+         the invited client.
+       - If the received id can not be found in singles: The client
+         gets an InvitedClientNotFound message.
+** Web pages
+   - /joinFamily: After receiving an invitation the client has to
+     visit /joinFamily which will put the family id into the client's
+     session, making him a part of this family.
+
