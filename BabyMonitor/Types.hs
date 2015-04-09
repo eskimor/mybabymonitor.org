@@ -6,6 +6,7 @@ import BabyMonitor.UId (UId)
 
 type ClientId = UId 
 type FamilyId = UId
+type DeviceId = UId
     
 
 type BabyName = Text
@@ -14,8 +15,13 @@ type ClientMap = Map ClientId Client
 type FamilyMap = Map FamilyId Family
 
 data Client = Client {
-      clientId :: ClientId
-    , toClient :: TQueue ByteString
+      deviceId :: ClientId
+    , toClient :: [TQueue ByteString] -- As there could be multiple
+                                      -- instances of one client (user
+                                      -- opens the site in multiple
+                                      -- tabs), we need a list of
+                                      -- TQueues, with a queue for
+                                      -- each instance.
     }
 
 

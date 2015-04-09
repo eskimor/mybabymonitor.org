@@ -1,32 +1,70 @@
 * Server/Client communication
 ** Websocket messages: Server -> Client
-   - HandleInvitation
-     - Argument: Id of the inviter
-     - Synopsis: The client is made aware that he has been invited to
-       join a family. The client can then either visit the /joinFamily
-       page to accept the invitation or send the DeclineInvitation
-       message back to the server.
-   - InvitedClientNotFound
-     - Argument: Id of the not-found client
-     - Synopsis: The user should be informed about this problem.
+*** HandleInvitation
+    - Argument: Id of the inviter
+    - Synopsis: The client is made aware that he has been invited to
+      join a family. The client can then either visit the /joinFamily
+      page to accept the invitation or send the DeclineInvitation
+      message back to the server.
+*** InvitedClientNotFound
+    - Argument: Id of the not-found client
+    - Synopsis: The user should be informed about this problem.
+*** NotInFamily
+    - Argument: Some descriptive text.
+    - Synopsis: If the client requests some action only available to
+      family members, the server responds with this message.
+*** BabiesOnline
+    - Argument: List of currently online baby names
+    - Synopsis: Every family member will get such a message every time
+      the list of online babies changes or the client requested the
+      list via: GetBabiesOnline
 ** Websocket messages: Client -> Server
-   - DeclineInvitation
-     - Argument: Id of inviter as found in the original HandleInvitation message
-     - Synopsis: Server will remove the client from the invitations
-       map and add it back to the singles map. Making him available
-       for further invitations. The id argument is ignored for now. 
-   - InviteClient
-     - Argument: Id of the client to be invited.
-     - Synopsis: 
-       - If received id can be found in singles: The id of the invited
-         client is removed and put into invitations. So the invited
-         client can not receive any further invitations, until he
-         declines. Then the server sends a HandleInvitation message to
-         the invited client.
-       - If the received id can not be found in singles: The client
-         gets an InvitedClientNotFound message.
+*** DeclineInvitation
+    - Argument: Id of inviter as found in the original HandleInvitation message
+    - Synopsis: Server will remove the client from the invitations
+      map and add it back to the singles map. Making him available
+      for further invitations. The id argument is ignored for now. 
+*** InviteClient
+    - Argument: Id of the client to be invited.
+    - Synopsis: 
+      - If received id can be found in singles: The id of the invited
+        client is removed and put into invitations. So the invited
+        client can not receive any further invitations, until he
+        declines. Then the server sends a HandleInvitation message to
+        the invited client.
+      - If the received id can not be found in singles: The client
+        gets an InvitedClientNotFound message.
+      - If the requesting client is not in a family, the server will
+        respond with the NotInFamily message.
+*** AnnounceBaby
+    - Argument: Name of the baby to be made available
+    - Synopsis:
+      - If not a family member: Server just replies with a NotInFamily message
+      - Otherwise: baby name gets added to the babiesOnline map,
+        making the baby available for connections. In addidition every
+        family member will get a BabiesOnline message, with the
+        updated information.
+      - If a baby with the same name was already registered, the
+        server will silently override the entry.
+*** RemoveBaby
+*** GetBabiesOnline
+    - Argument: None
+    - Synopsis: Server will respond with a BabiesOnline message or NotInFamily.
+
 ** Web pages
-   - /joinFamily: After receiving an invitation the client has to
-     visit /joinFamily which will put the family id into the client's
-     session, making him a part of this family.
+*** /joinFamily
+    - Argument: None
+    - Synopsis: After receiving an invitation the client has to visit
+      /joinFamily which will put the family id into the client's
+      session, making him a part of this family. The requesting
+      client will be removed from the invitations map and added to
+      the clients map of its new family.
+*** /
+    - Argument: None
+    - Synopsis:
+      - Client id and familiy id are present in session: Create
+        client and put it in its Family, create Family if necessary.
+      - Just client id is present: Create client and put it in the singles map.
+      - No session present: Create a new client and put it in the
+        singles list, set client id in the session.
 
