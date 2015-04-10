@@ -7,8 +7,9 @@ import System.UUID.V1
 import ClassyPrelude
 import qualified Codec.Binary.Base32 as B32
 import Data.Either.Combinators
-import Data.Binary
+import Data.Binary as Binary
 import qualified Data.Text as T
+import Data.Aeson
 
 
 -- Shortened version of V1 UUID.  We drop the MAC address, as for now
@@ -22,8 +23,17 @@ import qualified Data.Text as T
 -- ids. 10 bytes is still pretty long and we will use a base 32 code to
 -- reduce it to 16 displayed digits, which is manageable.
 
-newtype UId = UId ByteString deriving (Eq, Ord)
+newtype UId = UId ByteString deriving (Eq, Ord, Show)
 
+instance ToJSON UId where
+  toJSON = toJSON . toUserString
+
+instance FromJSON UId where
+  parseJSON val = do
+      mres <- fromUserString <$> (parseJSON val)
+      case mres of
+        Just res -> return res
+        Nothing  -> mzero
 
 -- Convert an uid to a string suitable to be displayed to a user
 toUserString :: UId -> Text
@@ -39,7 +49,7 @@ fromUserString =  fmap (UId . reverseTimeLow) . rightToMaybe
                   . filter (/= '-')
          
 make :: IO UId
-make = UId . toStrict . take 10 . encode <$> uuid
+make = UId . toStrict . take 10 . Binary.encode <$> uuid
   
 
 

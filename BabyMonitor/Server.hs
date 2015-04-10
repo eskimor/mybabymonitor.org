@@ -1,10 +1,25 @@
+{-# LANGUAGE DeriveGeneric #-}
 module BabyMonitor.Server where
 
 import ClassyPrelude
+import Data.Aeson
+
 
 import BabyMonitor.Types
 
 
-data Messages =
-    InviteClient Text -- stringified id of client to invite
-  | DeclineInvitation Text 
+data ClientServerMessage =
+    InviteClient DeviceId
+  | DeclineInvitation 
+  | AnnounceBaby Text
+  | RemoveBaby Text
+  | GetBabiesOnline
+  | MessageToClient Text
+  | GetAutoComplete Text deriving (Generic, Show)
+
+
+
+-- A little Generic vodoo ... 
+instance ToJSON ClientServerMessage
+
+instance FromJSON ClientServerMessage

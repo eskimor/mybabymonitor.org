@@ -18,12 +18,37 @@
     - Synopsis: Every family member will get such a message every time
       the list of online babies changes or the client requested the
       list via: GetBabiesOnline
+*** DuplicateBaby
+    - Argument: name of the duplicate
+    - Synpsis: Server sends this message if a client instance tries to
+      announce a baby which is already online.
+*** NotPermitted
+    - Argument: String describing what's the problem.
+    - Synopsis: Answer of server when client request action like
+      RemoveBaby although the client did not announce the baby.
+*** MessageFromClient
+    - Argument: Sender ClientId and message
+    - Synopsis: Some arbitrary message from the client with specified id.
+*** NoSuchClient
+    - Argument: The id of the client which is not available
+    - Synopsis: If a MessageToClient message can't be delivered, the
+      server will respond with this message.
+*** InvalidMessage
+    - Argument: The message which could not be parsed
+    - Synopsis: Error should be logged to console, should not happen
+      in a production system. Maybe report an "Internal error" or
+      something to the user and be deeply ashamed.
+*** AutoCompleteResult
+    - Argument: The completed device id
+    - Synopsis: When a user invites another client and has typed in at
+      least 4 digits, the client may ask the server for auto
+      completion if unique.
 ** Websocket messages: Client -> Server
 *** DeclineInvitation
-    - Argument: Id of inviter as found in the original HandleInvitation message
+    - Argument: None
     - Synopsis: Server will remove the client from the invitations
       map and add it back to the singles map. Making him available
-      for further invitations. The id argument is ignored for now. 
+      for further invitations. 
 *** InviteClient
     - Argument: Id of the client to be invited.
     - Synopsis: 
@@ -47,10 +72,20 @@
       - If a baby with the same name was already registered, the
         server will silently override the entry.
 *** RemoveBaby
+    - Argument: Baby name to take offline
+    - Synopsis: The entry in the babiesOnline map is going to be
+      removed if the requested client also announced it, otherwise a
+      NotPermitted message is sent.
 *** GetBabiesOnline
     - Argument: None
     - Synopsis: Server will respond with a BabiesOnline message or NotInFamily.
-
+*** MessageToClient
+    - Argument: ClientId of receiver and message
+    - Synopsis: Send a message to the given client.
+*** GetAutoComplete
+    - Argument: At least for digits of a device id, found in singles.
+    - Synopsis: Server will reply with AutoCompleteResult, if at least
+      4 digits were given and they were unique.
 ** Web pages
 *** /joinFamily
     - Argument: None
