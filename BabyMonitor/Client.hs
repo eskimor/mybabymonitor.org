@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric #-}
+
 module Client (
                Client
               , make
@@ -6,27 +8,30 @@ module Client (
 import ClassyPrelude
 
 import Data.Time.Clock.POSIX
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import Control.Concurrent (forkIO)
 import Control.Concurrent.STM.TMVar
+import Data.Aeson
 
 
 import BabyMonitor.UId
 import BabyMonitor.Types
 
-data Messages =
-    HandleInvitation Text -- stringified id of invitation sender
-  | InvitedClientNotFound Text -- id of not found client
-{--
-  Messages:
-  - Server - Client:
-    - handleInvitation: Argument: Inviter id - Just inform the client
-      that he got invited to a family. He can then choose to send:
-      discardInvation or visit the receiveInvitation page, followed by a
-      websocket reconnect.
+data ServerClientMessage =
+    HandleInvitation DeviceId 
+  | InvitedClientNotFound DeviceId 
+  | NotInFamily Text
+  | BabiesOnline (M.Map BabyName ClientId)
+  | DuplicateBaby Text
+  | NotPermitted Text
+  | MessageFromClient ClientId Text
+  | NoSuchClient ClientId
+  | InvalidMessage Text
+  | AutoCompleteResult DeviceId deriving (Generic, Show)
 
+instance FromJSON ServerClientMessage
 
---}
+instance ToJSON ServerClientMessage
  
 handleInvitation :: Client -> STM ()
-handleInvitation (Client _ q) = 
+handleInvitation (Client _ q) = undefined

@@ -14,7 +14,7 @@ data ClientServerMessage =
   | AnnounceBaby Text
   | RemoveBaby Text
   | GetBabiesOnline
-  | MessageToClient Text
+  | MessageToClient ClientId
   | GetAutoComplete Text deriving (Generic, Show)
 
 

@@ -14,7 +14,7 @@
     - Synopsis: If the client requests some action only available to
       family members, the server responds with this message.
 *** BabiesOnline
-    - Argument: List of currently online baby names
+    - Argument: Map of currently online baby names to client ids.
     - Synopsis: Every family member will get such a message every time
       the list of online babies changes or the client requested the
       list via: GetBabiesOnline
@@ -94,6 +94,10 @@
       session, making him a part of this family. The requesting
       client will be removed from the invitations map and added to
       the clients map of its new family.
+*** /leaveFamily
+    - Argument: None
+    - Synopsis: Client will be removed from its family and put back to
+      singles. Family id in the session will be erased.
 *** /
     - Argument: None
     - Synopsis:

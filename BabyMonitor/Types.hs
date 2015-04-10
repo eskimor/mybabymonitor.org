@@ -1,15 +1,18 @@
 module BabyMonitor.Types where
 
 import ClassyPrelude
+import Data.Aeson
+import qualified Data.Text as T
 
-import BabyMonitor.UId (UId)
+import BabyMonitor.UId
 
 type DeviceId = UId
 
 data ClientId = ClientId {
       devicePart :: DeviceId,
       instancePart :: Int
-    }
+    } deriving (Show)
+              
                 
 type FamilyId = UId
     
@@ -44,3 +47,17 @@ data Families = Families {
     , nextClientId :: TMVar UId
     , nextFamilyId :: TMVar UId
     }
+
+-- Instances: 
+instance ToJSON ClientId where
+    toJSON (ClientId devId instId) = toJSON $ toUserString devId <> "-" <> tshow instId
+
+instance FromJSON ClientId where
+    parseJSON val = do
+      (devId', instId') <- T.breakOnEnd "-" <$> parseJSON val
+      justZ $ ClientId <$> (stripSuffix "-" devId' >>= fromUserString)
+                       <*> readMay instId'
+
+
+justZ :: MonadPlus m => Maybe a -> m a
+justZ = maybe mzero return
