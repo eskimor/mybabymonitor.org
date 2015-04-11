@@ -43,12 +43,20 @@
     - Synopsis: When a user invites another client and has typed in at
       least 4 digits, the client may ask the server for auto
       completion if unique.
-** Websocket messages: Client -> Server
-*** DeclineInvitation
+*** Reconnect
     - Argument: None
-    - Synopsis: Server will remove the client from the invitations
-      map and add it back to the singles map. Making him available
-      for further invitations. 
+    - Synopsis: Sent when the client needs to reconnect in order to
+      get an updated session.
+*** YourId
+    - Argument: The DeviceId of the client
+    - Synopsis: The server sends this message after the client opened
+      a web socket connection, in order to inform the client of its
+      id.
+*** BabyCount
+    - Argument: The number of currently online babies
+    - Synopsis: This message will be sent from time to time, so the
+      client can display an accurate number.
+** Websocket messages: Client -> Server
 *** InviteClient
     - Argument: Id of the client to be invited.
     - Synopsis: 
@@ -94,6 +102,13 @@
       session, making him a part of this family. The requesting
       client will be removed from the invitations map and added to
       the clients map of its new family.
+*** /declineInvitation
+    - Argument: ClientId of inviting party
+    - Synopsis: Server will remove the client from the invitations
+      map. Then for security reasons a new id is generated and put
+      into the session, afterwards all websocket connections from this
+      client will receive a Reconnect message. As the server won't
+      accept any new messages from the existing websockets.
 *** /leaveFamily
     - Argument: None
     - Synopsis: Client will be removed from its family and put back to

@@ -3,7 +3,7 @@ module Foundation where
 import Import.NoFoundation
 import Text.Hamlet         (hamletFile)
 import Yesod.Core.Types    (Logger)
-import BabyMonitor.BabyCommunication
+import BabyMonitor.Family
 
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
@@ -14,7 +14,7 @@ data App = App
     , appStatic      :: Static -- ^ Settings for static file serving.
     , appHttpManager :: Manager
     , appLogger      :: Logger
-    , babyConnections :: TVar BabyConnections
+    , babyConnections :: TVar Families
     }
 
 instance HasHttpManager App where

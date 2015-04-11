@@ -8,47 +8,46 @@ import Control.Concurrent (forkIO)
 import Control.Concurrent.STM.TMVar
 
 
-import BabyMonitor.UId
-import BabyMonitor.Client
+import BabyMonitor.UId as UId
+import BabyMonitor.Client as Client
+import BabyMonitor.Types
 
 
 
 
 
-initFamilies :: IO (TVar Families)
-initFamilies = makeFamilies >>= atomically . newTVar
-
-initClient :: TVar Families -> STM Client
-initClient cs = do
-  clients <- readTVar cs
-  client <- takeTMVar (nextClientId clients) >>= makeClient
-  let singles' = M.insert (clientId client) client (singles clients)
-  writeTVar cs (clients { singles = singles' } )
-  return client
 
 
--- Only singles can be invited to a family. If the given client id is no longer single this function does nothing and therefore also returns Nothing to make that clear.
-inviteFamilyMember :: Family -> ClientId -> Families -> STM (Maybe Families)
-inviteFamilyMember family clientId clients =
-  let
-    (single, clients') = removeSingle clientId clients
-  in
-    return $ do  -- To be continued ... 
-      client <- single
-      return $ clients' { invitations = M.insert (familyId family) clientId (invitations clients') }
+
+-- Only singles can be invited to a family. 
+inviteFamilyMember :: ClientInstance -> Family ->  TVar Families -> DeviceId -> STM ()
+inviteFamilyMember source family families' destination = do
+  families <- readTVar families'
+  let single = M.lookup destination . singles $ families
+  let invitation = M.lookup destination . invitations $ families
+  case single of
+    Nothing -> Client.send (InvitedClientNotFound destination) source
+    Just member -> case invitation of
+                     Nothing -> Client.sendBroadcast member (HandleInvitation (clientId source))
+                     Just _ -> Client.send (InvitedClientNotFound destination) source -- A client can only be invited once.
+
+  let newInvitations = M.insert (deviceId member) (familyId family) (invitations families)
+                       
+  writeTVar families' families { invitations = newInvitations}
+
+declineInvitation :: TVar Families -> ClientInstance -> STM ()
+declineInvitation source families' = do
+  families <- readTVar families'
+  let sourceId = devicePart . clientId $ source
+  let newInvitations = M.delete sourceId . invitations $ families
+  let (single, newSingles) =  removeSingle sourceId . singles $ families
+  case single of
+    Nothing -> return ()
+    Just s -> Client.sendBroadcast s Reconnect
+  writeTVar families' families { invitations = newInvitations, singles = newSingles }
 
 -- Private - not to be exported:
 
-makeFamilies :: IO Families
-makeFamilies = do
-  (id1, id2) <- (,) <$> makeUId <*> makeUId
-  clients <- atomically
-             $ Families M.empty M.empty M.empty
-             <$> newTMVar id1
-             <*> newTMVar id2
-  forkIO $ forever $ fillId (nextClientId clients)
-  forkIO $ forever $ fillId (nextFamilyId clients)
-  return clients
 
 makeClient :: ClientId -> STM Client
 makeClient uid = Client uid Nothing False <$> newTQueue
@@ -58,12 +57,11 @@ makeClient uid = Client uid Nothing False <$> newTQueue
 fillId :: TMVar UId -> IO ()
 fillId mvar = makeUId >>= atomically . putTMVar mvar
 
-removeSingle :: ClientId -> Families -> (Maybe Client, Families)
-removeSingle clientId clients = 
+removeSingle :: DeviceId -> Map DeviceId Client -> (Maybe Client, Map DeviceId Client)
+removeSingle devId families' = 
                 let
-                    (client, singles') = M.updateLookupWithKey deleteSingle clientId (singles clients)
                     deleteSingle _ _ = Nothing
-                in (client, clients { singles = singles'})
+                in M.updateLookupWithKey deleteSingle devId (singles families')
 
 
 sendInvitation :: Family -> Client -> STM ()

@@ -1,37 +1,34 @@
-{-# LANGUAGE DeriveGeneric #-}
 
-module Client (
-               Client
-              , make
-              ) where
+module BabyMonitor.Client where
 
 import ClassyPrelude
 
-import Data.Time.Clock.POSIX
-import qualified Data.Map.Strict as M
-import Control.Concurrent (forkIO)
-import Control.Concurrent.STM.TMVar
-import Data.Aeson
+import Data.Aeson as Aeson
+import qualified Network.WebSockets as WS
 
-
-import BabyMonitor.UId
 import BabyMonitor.Types
+import qualified Data.Map.Strict as M
 
-data ServerClientMessage =
-    HandleInvitation DeviceId 
-  | InvitedClientNotFound DeviceId 
-  | NotInFamily Text
-  | BabiesOnline (M.Map BabyName ClientId)
-  | DuplicateBaby Text
-  | NotPermitted Text
-  | MessageFromClient ClientId Text
-  | NoSuchClient ClientId
-  | InvalidMessage Text
-  | AutoCompleteResult DeviceId deriving (Generic, Show)
-
-instance FromJSON ServerClientMessage
-
-instance ToJSON ServerClientMessage
  
-handleInvitation :: Client -> STM ()
-handleInvitation (Client _ q) = undefined
+
+make :: WS.Connection -> DeviceId -> (ClientInstance, Client)
+make conn did = (newInstance, Client did (M.singleton 0 newInstance) 1)
+    where
+      newInstance = ClientInstance (ClientId did 0) conn
+
+makeInstance :: WS.Connection -> Client -> (ClientInstance, Client)
+makeInstance conn cl = (newInst
+                       , cl {
+                          instances = M.insert nextId newInst (instances cl)
+                        , nextInstanceId = nextId + 1
+                        }
+                       )
+  where
+    nextId = nextInstanceId cl
+    newInst = ClientInstance (ClientId (deviceId cl) nextId) conn
+
+send :: ServerClientMessage -> ClientInstance -> STM ()
+send msg (ClientInstance _ queue) = undefined
+
+sendBroadcast :: Client -> ServerClientMessage -> STM ()
+sendBroadcast (Client _ instances _) msg = mapM_ (send msg) instances
