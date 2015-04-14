@@ -27,7 +27,7 @@ makeClient conn' mdid mfid tserv = do
            Just did' -> return did'
   conn <- mkWeakPtr conn' (cleanupIO mfid did tserv) -- WARNING: May not be safe. See the Warning in: http://haddocks.fpcomplete.com/fp/7.8/20140916-162/base/System-Mem-Weak.html#t:Weak
   atomically $ do
-    serv <- readTVar 
+    serv <- readTVar tserv
     let (client, serv') =  case mfid of
                            Nothing -> makeSingleClientInstance serv conn did
                            Just fid -> makeFamilyClientInstance serv conn did fid
@@ -45,15 +45,15 @@ handleMessage client mfmly rmsg tserv = do
   action <- atomically $ do
     serv <- readTVar tserv
     let mmsg = receive rmsg
-    let invalidMessage = InvalidMessage . decodeUtf8 rmsg
+    let invalidMessage = InvalidMessage . decodeUtf8 $ rmsg
     let notPermitted = NotPermitted "Single clients are currently not allowed to do anything!"
     let (action', serv') =
           case mmsg of
-            Nothing -> ( Client.send invalidMessage client
+            Nothing -> ( void $ Client.send invalidMessage client
                        , serv
                        )
             Just msg -> case mfmly of
-                          Nothing -> ( Client.send notPermitted client, serv )
+                          Nothing -> (void $ Client.send notPermitted client, serv )
                           Just fmly -> handleMessageFamily client fmly msg serv
     writeTVar tserv serv'
     return action'
@@ -173,6 +173,7 @@ updateBabyCounter f serv =
 cleanupIO :: Maybe FamilyId -> ClientId -> TVar Server -> IO ()
 cleanupIO mfid cid = atomically . cleanup mfid cid
 
+-- FIXME: cleanup has to update baby count too!
 cleanup :: Maybe FamilyId -> ClientId -> TVar Server -> STM ()
 cleanup mfid cid tserv = do
   -- Explicit pattern matching on purpose - This code should break on addition of new fields, so it will be adapted! - Otherwise risk of memory leaks.
