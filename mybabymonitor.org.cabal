@@ -91,7 +91,7 @@ library
                  , yesod-websockets
                  , sandi
                  , either
-                 , lens
+                 , transformers
 
 executable         mybabymonitor.org
     if flag(library-only)

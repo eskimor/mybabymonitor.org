@@ -35,7 +35,14 @@ deleteInstance cid family@(Family _ clients' babiesOnline') =
                                                    }
   
 
-sendInvitation :: Family -> Client -> STM ()
-sendInvitation = error "Not yet implemented"
+addBaby :: BabyOperation
+addBaby name client fmly = fmly { babiesOnline = M.insert name client (babiesOnline fmly) }
 
-
+-- We silently ignore non authorized requests
+removeBaby :: BabyOperation
+removeBaby name client fmly = fmly { babiesOnline = M.update removeIfPermitted name (babiesOnline fmly) }
+    where
+      removeIfPermitted owner = if clientId client == clientId owner
+                                then Nothing -- Delete
+                                else Just owner
+                                    

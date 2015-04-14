@@ -43,10 +43,6 @@
     - Synopsis: When a user invites another client and has typed in at
       least 4 digits, the client may ask the server for auto
       completion if unique.
-*** Reconnect
-    - Argument: None
-    - Synopsis: Sent when the client needs to reconnect in order to
-      get an updated session.
 *** YourId
     - Argument: The DeviceId of the client
     - Synopsis: The server sends this message after the client opened
@@ -95,7 +91,7 @@
     - Synopsis: Server will reply with AutoCompleteResult, if at least
       4 digits were given and they were unique.
 ** Web pages
-*** /createFamily
+*** /makeFamily
     - Argument: None
     - Synopsis: A family id is generated and put into the users
       session. Afterwards the client has to (re) establish the

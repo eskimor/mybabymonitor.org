@@ -25,6 +25,7 @@ type BabyName = Text
     
 type ClientMap = Map DeviceId Client
 type FamilyMap = Map FamilyId Family
+type BabyOperation = BabyName -> ClientInstance -> Family -> Family
 
 data ServerClientMessage =
     HandleInvitation ClientId
@@ -39,7 +40,6 @@ data ServerClientMessage =
   | AutoCompleteResult DeviceId
   | BabyCount Int
   | YourId DeviceId
-  | Reconnect
    deriving (Generic, Show)
 
 data ClientServerMessage =
@@ -70,12 +70,11 @@ data ClientInstance = ClientInstance {
 
 
 data Server = Server {
-      singles :: Map DeviceId Client -- Clients which are not yet in a family
+      singles :: ClientMap -- Clients which are not yet in a family
     , families :: FamilyMap
     , invitations :: Map DeviceId FamilyId
     , babyCount :: !Int
-    , nextClientId :: !(TMVar UId)
-    , nextFamilyId :: !(TMVar UId)
+    , lastSentBabyCount :: !Int
     }
 
 -- Instances: 
