@@ -17,16 +17,7 @@ lookupInstance :: ClientId -> ClientMap -> Maybe ClientInstance
 lookupInstance (ClientId dp ip) m = lookup dp m >>= lookup ip . instances 
 
 deleteInstance :: ClientId -> ClientMap -> ClientMap
-deleteInstance (ClientId dp ip) m = M.update updateClient dp m
-    where
-      updateClient cl =
-        let
-          newInstances = M.delete ip (instances cl)
-        in
-          if null newInstances
-          then Nothing
-          else Just cl { instances = newInstances }
-        
+deleteInstance (ClientId dp ip) m = M.update (Client.deleteInstance ip) dp m
 
 makeInstance :: WS.Connection -> DeviceId -> ClientMap -> (ClientId, ClientMap)
 makeInstance conn did m =

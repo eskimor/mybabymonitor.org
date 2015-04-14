@@ -27,8 +27,16 @@ makeInstance conn cl = (newInst
     nextId = nextInstanceId cl
     newInst = ClientInstance (ClientId (deviceId cl) nextId) conn
 
-send :: ServerClientMessage -> ClientInstance -> STM ()
+
+deleteInstance :: Int -> Client -> Maybe Client
+deleteInstance iid cl =
+    let
+        newInstances = M.delete iid (instances cl)
+    in
+     if null newInstances then Nothing else Just cl { instances = newInstances }
+                                            
+send :: ServerClientMessage -> ClientInstance -> IO () 
 send msg (ClientInstance _ queue) = undefined
 
-sendBroadcast :: Client -> ServerClientMessage -> STM ()
-sendBroadcast (Client _ instances _) msg = mapM_ (send msg) instances
+sendBroadcast :: ServerClientMessage -> Client -> IO ()
+sendBroadcast msg (Client _ instances _) = mapM_ (send msg) instances

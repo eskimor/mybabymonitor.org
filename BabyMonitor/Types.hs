@@ -6,6 +6,7 @@ import Data.Aeson
 import qualified Data.Text as T
 import qualified Data.Map.Strict as M
 import qualified Network.WebSockets as WS
+import System.Mem.Weak
 
 import BabyMonitor.UId
 
@@ -24,17 +25,6 @@ type BabyName = Text
     
 type ClientMap = Map DeviceId Client
 type FamilyMap = Map FamilyId Family
-
-data Client = Client {
-      deviceId :: DeviceId
-    , instances :: Map Int ClientInstance
-    , nextInstanceId :: Int
-    }
-
-data ClientInstance = ClientInstance {
-      clientId :: ClientId
-    , toClient :: WS.Connection
-    }
 
 data ServerClientMessage =
     HandleInvitation ClientId
@@ -62,9 +52,20 @@ data ClientServerMessage =
   deriving (Generic, Show)
               
 data Family = Family {
-      familyId :: FamilyId
-    , clients :: ClientMap
-    , babiesOnline :: Map BabyName ClientInstance
+      familyId :: !FamilyId
+    , clients :: !ClientMap
+    , babiesOnline :: !(Map BabyName ClientInstance)
+    }
+
+data Client = Client {
+      deviceId :: !DeviceId
+    , instances :: Map Int ClientInstance
+    , nextInstanceId :: !Int
+    }
+
+data ClientInstance = ClientInstance {
+      clientId :: !ClientId
+    , toClient :: !(Weak WS.Connection)
     }
 
 
@@ -72,9 +73,9 @@ data Server = Server {
       singles :: Map DeviceId Client -- Clients which are not yet in a family
     , families :: FamilyMap
     , invitations :: Map DeviceId FamilyId
-    , babyCount :: Int
-    , nextClientId :: TMVar UId
-    , nextFamilyId :: TMVar UId
+    , babyCount :: !Int
+    , nextClientId :: !(TMVar UId)
+    , nextFamilyId :: !(TMVar UId)
     }
 
 -- Instances: 

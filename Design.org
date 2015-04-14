@@ -95,6 +95,11 @@
     - Synopsis: Server will reply with AutoCompleteResult, if at least
       4 digits were given and they were unique.
 ** Web pages
+*** /createFamily
+    - Argument: None
+    - Synopsis: A family id is generated and put into the users
+      session. Afterwards the client has to (re) establish the
+      websocket connection having its new family id.
 *** /joinFamily
     - Argument: None
     - Synopsis: After receiving an invitation the client has to visit
@@ -122,3 +127,4 @@
       - No session present: Create a new client and put it in the
         singles list, set client id in the session.
 
+        
