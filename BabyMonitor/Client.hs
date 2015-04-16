@@ -1,7 +1,7 @@
 
 module BabyMonitor.Client where
 
-import ClassyPrelude
+import ClassyPrelude hiding (mapM_)
 
 import Data.Aeson as Aeson
 import qualified Network.WebSockets as WS
@@ -10,7 +10,7 @@ import BabyMonitor.Types
 import qualified Data.Map.Strict as M
 import System.Mem.Weak
 import Control.Monad.Trans.Maybe
- 
+import Control.Monad
 
 make :: Weak WS.Connection -> DeviceId -> (ClientInstance, Client)
 make conn did = (newInstance, Client did (M.singleton 0 newInstance) 1)
@@ -44,7 +44,7 @@ send msg (ClientInstance _ queue) = do
   return $ isJust result
                    
 sendBroadcast :: ServerClientMessage -> Client -> IO ()
-sendBroadcast msg (Client _ instances _) = mapM_ (void . send $ msg) instances 
+sendBroadcast msg (Client _ instances _) = mapM_ (send msg) . M.elems $ instances 
 
 
                                                

@@ -24,6 +24,7 @@ connectBaby name = do
   y <- lift getYesod
   addr <- lift getClientAddress
   $logDebug $ "connect Baby got address: " <> tshow addr
+            {--
   mBaby <- liftIO . atomically $ do
     connections <- readTVar $ babyConnections y
     let (mBaby, connections') = popBabyConnection connections addr name
@@ -45,6 +46,7 @@ connectBaby name = do
              (forever writer)
              (forever reader) 
     where
+    --}
 
 getBabyConnectChannelR :: BabyName -> Handler ()
 getBabyConnectChannelR = webSockets . connectBaby

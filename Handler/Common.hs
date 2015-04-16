@@ -25,9 +25,10 @@ getRobotsR = return $ TypedContent typePlain
 --retrieveBabies :: MonadHandler m => m [BabyName]
 retrieveBabies :: Handler [BabyName]
 retrieveBabies = do
-  App {babyConnections = connections} <- getYesod
-  address <- getClientAddress
-  liftIO . atomically $ fmap fst . flip getBabies address <$> readTVar connections
+  --App {babyConnections = connections} <- getYesod
+  --address <- getClientAddress
+  -- liftIO . atomically $ fmap fst . flip getBabies address <$> readTVar connections
+  return []
          
 getBabiesR :: Handler TypedContent
 getBabiesR = retrieveBabies >>= selectRep . provideRep . returnJson

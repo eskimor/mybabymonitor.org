@@ -25,24 +25,23 @@ babyWaiting name = do
   y <- lift getYesod
   addr <- lift getClientAddress
   $logDebug $ "waiting Baby got address: " <> tshow addr
-  connection <- liftIO . atomically $ do
-    connections <-  readTVar $ babyConnections y
-    (connection, connections') <- newBaby connections addr name
-    writeTVar (babyConnections y) connections'
-    return connection
-  let writer = receiveData >>= liftIO . atomically . babySend connection 
-  let reader = (liftIO . atomically . babyReceive) connection >>= sendTextData
-  let updateConnections' = updateConnections y addr connection
-  race_
-                   (onException (forever writer) updateConnections')
-                   (onException (forever reader) updateConnections')
-  where
-    updateConnections :: App -> SockAddr ->  BabyConnection -> WebSocketsT Handler ()
-    updateConnections y addr connection = do
-                     liftIO . atomically $ modifyTVar' (babyConnections y)
-                          (\bcs -> dropBabyConnection bcs addr (name, connection))
+  -- connection <- liftIO . atomically $ do
+    --connections <-  readTVar $ babyConnections y
+    -- (connection, connections') <- newBaby connections addr name
+    --writeTVar (babyConnections y) connections'
+    --return connection
+  --let writer = receiveData >>= liftIO . atomically . babySend connection 
+  --let reader = (liftIO . atomically . babyReceive) connection >>= sendTextData
+  --let updateConnections' = updateConnections y addr connection
+  --race_
+--                   (onException (forever writer) updateConnections')
+ --                  (onException (forever reader) updateConnections')
+--  where
+    --updateConnections :: App -> SockAddr ->  BabyConnection -> WebSocketsT Handler ()
+    --updateConnections y addr connection = do
+                     --liftIO . atomically $ modifyTVar' (babyConnections y)
+                          --(\bcs -> dropBabyConnection bcs addr (name, connection))
 
-                          
 getBabyOpenChannelR :: BabyName -> Handler ()
 getBabyOpenChannelR = webSockets . babyWaiting 
 

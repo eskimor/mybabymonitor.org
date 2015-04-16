@@ -1,4 +1,12 @@
-module BabyMonitor.Server where
+module BabyMonitor.Server (
+                           makeClient
+                          , makeFamilyId
+                          , handleMessage
+                          , declineInvitation
+                          , Server
+                          , init 
+  )
+       where
 
 import ClassyPrelude
 import Data.Aeson as Aeson
@@ -25,14 +33,16 @@ makeClient conn' mdid mfid tserv = do
   did <- case mdid of
            Nothing -> UId.make
            Just did' -> return did'
-  conn <- mkWeakPtr conn' (cleanupIO mfid did tserv) -- WARNING: May not be safe. See the Warning in: http://haddocks.fpcomplete.com/fp/7.8/20140916-162/base/System-Mem-Weak.html#t:Weak
-  atomically $ do
+  conn <- mkWeakPtr conn' Nothing 
+  cl <- atomically $ do
     serv <- readTVar tserv
     let (client, serv') =  case mfid of
-                           Nothing -> makeSingleClientInstance serv conn did
-                           Just fid -> makeFamilyClientInstance serv conn did fid
+                           Nothing -> makeSingleClientInstance conn did serv
+                           Just fid -> makeFamilyClientInstance conn did fid serv
     writeTVar tserv serv'
     return client
+  addFinalizer conn' (cleanupIO mfid (clientId cl) tserv) -- WARNING: May not be safe. See the Warning in: http://haddocks.fpcomplete.com/fp/7.8/20140916-162/base/System-Mem-Weak.html#t:Weak
+  return cl
 
 
 -- To be used from /makeFamily
@@ -41,13 +51,12 @@ makeFamilyId _ = UId.make
 
 
 handleMessage :: ClientInstance -> Maybe FamilyId ->  LByteString -> TVar Server -> IO ()
-handleMessage client mfmly rmsg tserv = do
-  action <- atomically $ do
+handleMessage client mfmly rmsg tserv = join . atomically $ do
     serv <- readTVar tserv
     let mmsg = receive rmsg
     let invalidMessage = InvalidMessage . decodeUtf8 $ rmsg
     let notPermitted = NotPermitted "Single clients are currently not allowed to do anything!"
-    let (action', serv') =
+    let (action, serv') =
           case mmsg of
             Nothing -> ( void $ Client.send invalidMessage client
                        , serv
@@ -56,8 +65,7 @@ handleMessage client mfmly rmsg tserv = do
                           Nothing -> (void $ Client.send notPermitted client, serv )
                           Just fmly -> handleMessageFamily client fmly msg serv
     writeTVar tserv serv'
-    return action'
-  action
+    return action
 
 -- There is nothing to do, but delete the Client id in the session and have the client reconnect. The GC via cleanup will take care of the rest.
 declineInvitation :: ClientId -> Server -> Server
@@ -81,9 +89,7 @@ makeFamilyClientInstance :: Weak WS.Connection -> DeviceId -> FamilyId -> Server
 makeFamilyClientInstance conn did fid serv = 
     let
         mfmly = M.lookup fid . families $ serv
-        family = case mfmly of
-                   Nothing -> Family.make fid
-                   Just fmly -> fmly
+        family = fromMaybe (Family.make fid) mfmly
         (client, newClients) = ClientMap.makeInstance conn did . clients $ family
         newFamily = family { clients = newClients }
     in
@@ -103,7 +109,7 @@ handleMessageFamily source fid msg serv =
 -- Handle client requests: 
 
 inviteFamilyMember :: ClientInstance -> Family -> DeviceId -> Server -> (IO (), Server)
-inviteFamilyMember source fid inviteeId serv =
+inviteFamilyMember source fmly inviteeId serv =
     let
         invitation = M.lookup inviteeId . invitations $ serv
         msingle = if isNothing invitation -- Can only be invited once.
@@ -112,12 +118,12 @@ inviteFamilyMember source fid inviteeId serv =
         action = case msingle of
                    Just single -> Client.sendBroadcast
                                     (HandleInvitation . clientId $ source)
-                                    msingle
-                   Nothing ->  Client.send
+                                    single
+                   Nothing ->  void $ Client.send
                                  (InvitedClientNotFound inviteeId)
                                  source
         newInvitations = if isJust msingle
-                         then M.insert inviteeId fid (invitations serv)
+                         then M.insert inviteeId (familyId fmly) (invitations serv)
                          else invitations serv
     in 
       (action, serv { invitations = newInvitations })
@@ -141,7 +147,7 @@ modifyBabies op client baby fmly serv =
     newFmly = op baby client fmly
     message = BabiesOnline . fmap clientId . babiesOnline $ newFmly
     action = mapM_ (sendBroadcast message) . clients $ newFmly
-    newBabyCount = (length . babiesOnline $ newFmly) - (length . babiesOnline $ fmly)
+    newBabyCount = Family.babyCount newFmly - Family.babyCount fmly
     (counterAction, newServ) = updateBabyCounter (+newBabyCount) .
                                updateFamily newFmly $ serv
   in (action >> counterAction, newServ)
@@ -157,11 +163,9 @@ updateBabyCounter f serv =
         newValue = f . babyCount $ serv
         oldValue = lastSentBabyCount serv
         message = BabyCount newValue
-        sendUpdate = abs ((newValue - oldValue)/oldValue) > 0.1
+        sendUpdate = abs (fromIntegral (newValue - oldValue) / fromIntegral oldValue) > 0.1
         allClients = singles serv <> (mconcat . fmap clients . M.elems . families $ serv)
-        action = if sendUpdate 
-                 then mapM_ (Client.sendBroadcast message) allClients
-                 else return ()
+        action = when sendUpdate $ mapM_ (Client.sendBroadcast message) allClients
         newServ = serv { babyCount = newValue
                        , lastSentBabyCount = if sendUpdate
                                              then newValue
@@ -171,22 +175,31 @@ updateBabyCounter f serv =
      (action, newServ)
 
 cleanupIO :: Maybe FamilyId -> ClientId -> TVar Server -> IO ()
-cleanupIO mfid cid = atomically . cleanup mfid cid
+cleanupIO mfid cid tserv = join .  atomically . cleanup mfid cid $ tserv
 
--- FIXME: cleanup has to update baby count too!
-cleanup :: Maybe FamilyId -> ClientId -> TVar Server -> STM ()
+cleanup :: Maybe FamilyId -> ClientId -> TVar Server -> STM (IO ())
 cleanup mfid cid tserv = do
   -- Explicit pattern matching on purpose - This code should break on addition of new fields, so it will be adapted! - Otherwise risk of memory leaks.
   serv@(Server singles' families' invitations' _ _) <- readTVar tserv
   let newSingles = ClientMap.deleteInstance cid singles'
-  let newFamilies = case mfid of
-        Nothing -> families'
-        Just fid -> M.update (Family.deleteInstance cid) fid families' 
   let newInvitations = M.delete (devicePart cid) invitations'
-  writeTVar tserv serv { singles = newSingles
-                       , families = newFamilies
+  let (action, newServer) = case mfid of
+        Nothing -> (return (), serv )
+        Just fid ->
+          let
+              oldFamily = fromJust $ M.lookup fid families' -- fromJust: Exception is fine, it should really not happen that we have an id but no data.
+              mNewFamily = Family.deleteInstance cid oldFamily
+              babyDiff = case mNewFamily of
+                           Nothing -> 0 - Family.babyCount oldFamily
+                           Just newFamily -> Family.babyCount newFamily - Family.babyCount oldFamily
+              newFamilies = M.update (Family.deleteInstance cid) fid families' 
+          in
+            updateBabyCounter (+babyDiff) serv { families = newFamilies}
+           
+  writeTVar tserv newServer { singles = newSingles
                        , invitations = newInvitations
                        }
+  return action
 
 modifyTVarSTM :: TVar a -> (a -> STM (b, a)) -> STM b
 modifyTVarSTM var f = do

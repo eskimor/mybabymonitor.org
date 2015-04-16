@@ -36,7 +36,7 @@ data ServerClientMessage =
   | NotPermitted Text
   | MessageFromClient ClientId Text
   | NoSuchClient ClientId
-  | InvalidMessage Text
+  | InvalidMessage LText
   | AutoCompleteResult DeviceId
   | BabyCount Int
   | YourId DeviceId

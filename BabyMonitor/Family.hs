@@ -19,6 +19,8 @@ import qualified BabyMonitor.ClientMap as ClientMap
 make :: FamilyId -> Family
 make fid = Family fid M.empty M.empty
 
+babyCount :: Family -> Int
+babyCount = length . babiesOnline
 
 deleteInstance :: ClientId -> Family -> Maybe Family
 -- Explicit pattern matching on purpose - this code should break on addition of fields, so Server.cleanup gets checked.

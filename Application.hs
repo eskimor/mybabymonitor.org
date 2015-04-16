@@ -21,7 +21,7 @@ import System.Log.FastLogger                (defaultBufSize, newStdoutLoggerSet,
                                              toLogStr)
 
 
-import BabyMonitor.BabyCommunication 
+import BabyMonitor.Server as Server
 -- Import all relevant handler modules here.
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common
@@ -47,7 +47,7 @@ makeFoundation appSettings = do
     appStatic <-
         (if appMutableStatic appSettings then staticDevel else static)
         (appStaticDir appSettings)
-    babyConnections <- atomically . newTVar $ emptyConnections
+    server <- Server.init
     -- Return the foundation
     return App {..}
 
