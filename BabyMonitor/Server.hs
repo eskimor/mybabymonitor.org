@@ -1,12 +1,17 @@
 module BabyMonitor.Server (
                            makeClient
+                          , makeDeviceId
                           , makeFamilyId
                           , handleMessage
                           , declineInvitation
+                          , acceptInvitation
                           , Server
-                          , init 
-  )
-       where
+                          , init
+                          , ClientId
+                          , DeviceId
+                          , FamilyId
+                          )
+    where
 
 import ClassyPrelude
 import Data.Aeson as Aeson
@@ -26,13 +31,12 @@ import qualified BabyMonitor.UId as UId
 init :: IO (TVar Server)
 init = atomically . newTVar $ BabyMonitor.Server.make
 
+makeDeviceId :: IO DeviceId
+makeDeviceId = UId.make
+
 -- Create a client instance for a newly connected client
--- Just pass Nothing for any maybe you don't have yet.
-makeClient :: WS.Connection -> Maybe DeviceId -> Maybe FamilyId -> TVar Server -> IO ClientInstance
-makeClient conn' mdid mfid tserv = do
-  did <- case mdid of
-           Nothing -> UId.make
-           Just did' -> return did'
+makeClient :: WS.Connection -> DeviceId -> Maybe FamilyId -> TVar Server -> IO ClientInstance
+makeClient conn' did mfid tserv = do
   conn <- mkWeakPtr conn' Nothing 
   cl <- atomically $ do
     serv <- readTVar tserv
@@ -46,8 +50,8 @@ makeClient conn' mdid mfid tserv = do
 
 
 -- To be used from /makeFamily
-makeFamilyId :: TVar Server -> IO FamilyId
-makeFamilyId _ = UId.make
+makeFamilyId :: IO FamilyId
+makeFamilyId = UId.make
 
 
 handleMessage :: ClientInstance -> Maybe FamilyId ->  LByteString -> TVar Server -> IO ()
@@ -55,7 +59,7 @@ handleMessage client mfmly rmsg tserv = join . atomically $ do
     serv <- readTVar tserv
     let mmsg = receive rmsg
     let invalidMessage = InvalidMessage . decodeUtf8 $ rmsg
-    let notPermitted = NotPermitted "Single clients are currently not allowed to do anything!"
+    let notPermitted = NotPermitted "Single clients are currently not allowed to do a nything!"
     let (action, serv') =
           case mmsg of
             Nothing -> ( void $ Client.send invalidMessage client
@@ -71,6 +75,15 @@ handleMessage client mfmly rmsg tserv = join . atomically $ do
 declineInvitation :: ClientId -> Server -> Server
 declineInvitation _ serv = serv
 
+acceptInvitation :: DeviceId -> TVar Server -> IO (Maybe FamilyId)
+acceptInvitation did tserv = atomically $ do
+  serv <- readTVar tserv
+  let minvitation = M.lookup did (invitations serv)
+  -- Invitations won't be touched, cleanup takes care of them. Keeping
+  -- the invitation around does not harm, but prevent the client from being
+  -- invited again.
+  return minvitation
+    
 -- Private - not to be exported:
 make :: Server
 make =  Server M.empty M.empty M.empty 0 0
@@ -102,9 +115,12 @@ handleMessageFamily source fid msg serv =
     in
         case msg of
           InviteClient devId -> inviteFamilyMember source fmly devId serv
-          AnnounceBaby name -> announceBaby source name fmly serv
-          RemoveBaby name -> removeBaby source name fmly serv
-          GetBabiesOnline -> sendBabies source fmly serv
+          AnnounceBaby name -> modifyBabies Family.addBaby source name fmly serv
+          RemoveBaby name -> modifyBabies Family.removeBaby source name fmly serv
+          GetBabiesOnline -> (Family.sendBabies source fmly, serv)
+          MessageToClient clid fmsg -> (Family.forwardMessage source fmsg clid fmly
+                                         , serv)
+          GetAutoComplete txt -> (sendAutoComplete source txt (singles serv), serv)
                              
 -- Handle client requests: 
 
@@ -128,26 +144,20 @@ inviteFamilyMember source fmly inviteeId serv =
     in 
       (action, serv { invitations = newInvitations })
 
-announceBaby :: ClientInstance -> BabyName -> Family -> Server -> (IO (), Server)
-announceBaby = modifyBabies Family.addBaby
-               
-removeBaby :: ClientInstance -> BabyName -> Family -> Server -> (IO (), Server)
-removeBaby = modifyBabies Family.removeBaby
 
+sendAutoComplete :: ClientInstance -> Text -> ClientMap -> IO ()
+sendAutoComplete client txt m = do
+  let mcompletion = ClientMap.getAutoComplete txt m
+  case mcompletion of
+    Nothing -> return ()
+    Just did -> void $ Client.send (AutoCompleteResult did) client
 
-sendBabies :: ClientInstance -> Family -> Server -> (IO (), Server)
-sendBabies client fmly serv =
-  let
-    message = BabiesOnline . fmap clientId . babiesOnline $ fmly
-  in (void . send message $ client, serv)
      
 modifyBabies :: BabyOperation -> ClientInstance -> BabyName -> Family -> Server -> (IO (), Server)
 modifyBabies op client baby fmly serv = 
   let
-    newFmly = op baby client fmly
-    message = BabiesOnline . fmap clientId . babiesOnline $ newFmly
-    action = mapM_ (sendBroadcast message) . clients $ newFmly
-    newBabyCount = Family.babyCount newFmly - Family.babyCount fmly
+    (action, newFmly) = Family.modifyBabies op client baby fmly
+    newBabyCount = Family.babyDiff newFmly fmly 
     (counterAction, newServ) = updateBabyCounter (+newBabyCount) .
                                updateFamily newFmly $ serv
   in (action >> counterAction, newServ)
@@ -182,7 +192,11 @@ cleanup mfid cid tserv = do
   -- Explicit pattern matching on purpose - This code should break on addition of new fields, so it will be adapted! - Otherwise risk of memory leaks.
   serv@(Server singles' families' invitations' _ _) <- readTVar tserv
   let newSingles = ClientMap.deleteInstance cid singles'
-  let newInvitations = M.delete (devicePart cid) invitations'
+  let noInstancesLeft = length newSingles < length singles' 
+  let newInvitations = if noInstancesLeft
+                       then M.delete (devicePart cid) invitations'
+                       else invitations'
+                            
   let (action, newServer) = case mfid of
         Nothing -> (return (), serv )
         Just fid ->

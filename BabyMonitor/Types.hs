@@ -30,9 +30,7 @@ type BabyOperation = BabyName -> ClientInstance -> Family -> Family
 data ServerClientMessage =
     HandleInvitation ClientId
   | InvitedClientNotFound DeviceId 
-  | NotInFamily Text
   | BabiesOnline (M.Map BabyName ClientId)
-  | DuplicateBaby Text
   | NotPermitted Text
   | MessageFromClient ClientId Text
   | NoSuchClient ClientId
@@ -47,8 +45,8 @@ data ClientServerMessage =
   | AnnounceBaby Text
   | RemoveBaby Text
   | GetBabiesOnline
-  | MessageToClient ClientId
-  | GetAutoComplete Text
+  | MessageToClient ClientId Text
+  | GetAutoComplete Text -- Partial device id
   deriving (Generic, Show)
               
 data Family = Family {

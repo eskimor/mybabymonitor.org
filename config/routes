@@ -4,8 +4,7 @@
 /robots.txt RobotsR GET
 
 / HomeR GET
-/baby BabyR GET
-/parent ParentR GET
-/babies BabiesR GET
-/ws/babyOpenChannel/#Text BabyOpenChannelR GET -- Opened by the baby
-/ws/babyConnectChannel/#Text BabyConnectChannelR GET -- Connected by the parent
+/ MakeFamilyR PUT
+/ JoinFamilyR PUT
+/ DeclineInvitationR PUT
+/ LeaveFamilyR PUT

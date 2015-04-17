@@ -6,9 +6,10 @@ module BabyMonitor.UId (make, fromUserString, toUserString, UId) where
 import System.UUID.V1
 import ClassyPrelude
 import qualified Codec.Binary.Base32 as B32
-import Data.Either.Combinators
 import Data.Binary as Binary
 import qualified Data.Text as T
+import qualified Data.Char as C
+import qualified Data.ByteString.Char8 as BC
 import Data.Aeson
 
 
@@ -23,14 +24,14 @@ import Data.Aeson
 -- ids. 10 bytes is still pretty long and we will use a base 32 code to
 -- reduce it to 16 displayed digits, which is manageable.
 
-newtype UId = UId ByteString deriving (Eq, Ord, Show)
+newtype UId = UId ByteString deriving (Eq, Ord, Show, Binary)
 
 instance ToJSON UId where
   toJSON = toJSON . toUserString
 
 instance FromJSON UId where
   parseJSON val = do
-      mres <- fromUserString <$> (parseJSON val)
+      mres <- fromUserString <$> parseJSON val
       case mres of
         Just res -> return res
         Nothing  -> mzero
@@ -38,18 +39,31 @@ instance FromJSON UId where
 -- Convert an uid to a string suitable to be displayed to a user
 toUserString :: UId -> Text
 toUserString (UId uid) = T.intercalate "-" . T.chunksOf 4
-                         . toLower
-                         . decodeUtf8 . B32.encode
-                         . reverseTimeLow $ uid
+                         . decodeUtf8 
+                         $ uid
 
 fromUserString :: Text -> Maybe UId
-fromUserString =  fmap (UId . reverseTimeLow) . rightToMaybe
-                  . B32.decode . encodeUtf8
-                  . toUpper
+fromUserString =  fmap UId 
+                  . check
+                  . encodeUtf8
+                  . toLower
                   . filter (/= '-')
-         
+    where
+      check :: ByteString -> Maybe ByteString
+      check val = if length val == 16 && (all checkDigit . BC.unpack) val
+                  then Just val
+                  else Nothing
+                       
+      checkDigit :: Char -> Bool
+      checkDigit digit = digit `elem` (['a' .. 'z'] ++ ['2' .. '7'])
+
+
+
 make :: IO UId
-make = UId . toStrict . take 10 . Binary.encode <$> uuid
+make = UId .  BC.map C.toLower  
+       . B32.encode . reverseTimeLow
+       . toStrict . take 10 . Binary.encode
+       <$> uuid
   
 
 
@@ -59,7 +73,7 @@ make = UId . toStrict . take 10 . Binary.encode <$> uuid
 -- required to enter a few digits and get an auto complete as soon as
 -- the value is unique.
 reverseTimeLow :: ByteString -> ByteString
-reverseTimeLow bs = (reverse . take 4 $ bs) <> (drop 4 bs)
+reverseTimeLow bs = (reverse . take 4 $ bs) <> drop 4 bs
 
 
 

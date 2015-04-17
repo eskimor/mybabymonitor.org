@@ -9,10 +9,6 @@
 *** InvitedClientNotFound
     - Argument: Id of the not-found client
     - Synopsis: The user should be informed about this problem.
-*** NotInFamily
-    - Argument: Some descriptive text.
-    - Synopsis: If the client requests some action only available to
-      family members, the server responds with this message.
 *** BabiesOnline
     - Argument: Map of currently online baby names to client ids.
     - Synopsis: Every family member will get such a message every time
@@ -82,7 +78,7 @@
       NotPermitted message is sent.
 *** GetBabiesOnline
     - Argument: None
-    - Synopsis: Server will respond with a BabiesOnline message or NotInFamily.
+    - Synopsis: Server will respond with a BabiesOnline message or NotPermitted.
 *** MessageToClient
     - Argument: ClientId of receiver and message
     - Synopsis: Send a message to the given client.
