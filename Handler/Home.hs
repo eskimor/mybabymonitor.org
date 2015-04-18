@@ -39,7 +39,7 @@ clientSocket did mfid = do
 
 putMakeFamilyR :: Handler Text
 putMakeFamilyR = do
-  mfid <- S.lookupSession S.FamilyId
+  mfid <- S.lookupSession S.FamilyId :: Handler (Maybe Server.FamilyId)
   case mfid of
     Just _ -> return "Please leave your current family first."
     Nothing -> do
@@ -53,7 +53,7 @@ putJoinFamilyR = do
   case mdid of
     Nothing -> return "Please visit '/' first and get invited to a family!"
     Just did -> do
-                   mfid <- getYesod >>= liftIO . Server.acceptInvitation did server 
+                   mfid <- getYesod >>= liftIO . Server.acceptInvitation did . server 
                    case mfid of
                      Nothing -> return "Please get invited to a family first!"
                      Just fid -> S.setSession S.FamilyId fid >> return "Ok."

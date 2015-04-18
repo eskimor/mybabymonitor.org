@@ -21,9 +21,12 @@ library
                      Handler.Common
                      Handler.Home
                      Handler.Session
-                     Handler.Baby
-                     Handler.Parent
-                     BabyMonitor.BabyCommunication
+                     BabyMonitor.Server
+                     BabyMonitor.Client
+                     BabyMonitor.ClientMap
+                     BabyMonitor.Family
+                     BabyMonitor.UId
+                     BabyMonitor.Types
 
     if flag(dev) || flag(library-only)
         cpp-options:   -DDEVELOPMENT

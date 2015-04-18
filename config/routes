@@ -4,7 +4,7 @@
 /robots.txt RobotsR GET
 
 / HomeR GET
-/ MakeFamilyR PUT
-/ JoinFamilyR PUT
-/ DeclineInvitationR PUT
-/ LeaveFamilyR PUT
+/makeFamily MakeFamilyR PUT
+/joinFamily JoinFamilyR PUT
+/declineInvitation DeclineInvitationR PUT
+/leaveFamily LeaveFamilyR PUT
