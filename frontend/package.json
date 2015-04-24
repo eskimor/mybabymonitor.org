@@ -1,0 +1,26 @@
+{
+  "name": "frontend-mybabymonitor.org",
+  "version": "1.0.0",
+  "description": "Frontend code for mybabymonitor.org",
+  "main": "Gruntfile.js",
+  "dependencies": {
+    "bower": "^1.4.1",
+    "browserify": "^9.0.8",
+    "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-copy": "^0.8.0",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-purescript": "^0.6.0",
+    "matchdep": "^0.3.0",
+    "virtual-dom": "^2.0.1"
+  },
+  "devDependencies": {
+    "grunt-contrib-watch": "^0.6.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Robert Klotzner <robert.klotzner AT gmx.at>",
+  "license": "GPLv3"
+}

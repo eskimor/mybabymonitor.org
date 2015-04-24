@@ -15,7 +15,7 @@ development: true
 detailed-logging: true
 should-log-all: true
 # reload-templates: false
-# mutable-static: false
+mutable-static: true
 # skip-combining: false
 
 copyright: "&copy; by Robert Klotzner"
