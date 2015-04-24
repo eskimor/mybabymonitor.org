@@ -23,7 +23,10 @@ init selected navigationPoints = { navigationPoints : navigationPoints
                                  , selected : selected }
 
 -- Actions:
-data Action = SelectNavigation String
+type Action = State -> State
+
+selectNavigation :: String -> Action
+selectNavigation nav state = state { selected = nav }
 
 
 
@@ -67,7 +70,7 @@ viewNavigationPoint state item =
        [ H.a
           [
             A.href "javascript:;"
-          , A.onclick (A.input \_ -> SelectNavigation item)
+          , A.onclick (A.input \_ -> selectNavigation item)
           ]
           [
             H.text item
