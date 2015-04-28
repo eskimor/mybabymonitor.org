@@ -6,6 +6,7 @@ import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
 import qualified Halogen.Themes.Bootstrap3 as B
+import Data.Bifunctor
 
 
 import qualified Util.NavigationBar as NavBar
@@ -25,6 +26,7 @@ init =
   , babiesOnline : Map.empty
   , babiesCount : 0
   , serverError : ""
+  , inFamily : false
   }
 
 
@@ -34,17 +36,20 @@ type Action = State -> State
 updateNavBar :: NavBar.Action -> Action
 updateNavBar act state = state { navBar = act state.navBar }
 
+navbarView :: forall p m . (Applicative m) => H.HTML p (m NavBar.Action) -> H.HTML p (m Action)
+navbarView = rmap (updateNavBar <$>)
+
 view :: forall p m . (Applicative m) => State -> H.HTML p (m Action)
 view state =
     H.div [ A.id_ "pageContainer"]
      [
-      NavBar.view state.navBar
+      navbarView (NavBar.view state.navBar)
      , H.div [ A.id_ "pageContent" ]
         [
          viewContent state
         ]
      , H.footer
-        [A.classes [B.navbar, B.navbarDefault, B.navbarFixedBottom, "footer"] ]
+        [A.classes [B.navbar, B.navbarDefault, B.navbarFixedBottom, A.className "footer"] ]
         [
          viewBabiesOnlineText state
         , H.br [] []

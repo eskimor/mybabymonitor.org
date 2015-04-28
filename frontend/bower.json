@@ -1,7 +1,9 @@
 {
   "name": "frontend",
   "version": "1.0.0",
-  "main" : ["src/App.purs"],
+  "main": [
+    "src/App.purs"
+  ],
   "moduleType": [
     "node"
   ],
@@ -12,6 +14,7 @@
     "output"
   ],
   "dependencies": {
-    "purescript-halogen": "~0.4.1"
+    "purescript-halogen": "~0.4.1",
+    "purescript-datetime": "~0.5.2"
   }
 }
