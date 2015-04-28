@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "1.0.0",
   "main": [
-    "src/App.purs"
+    "src/Main.purs"
   ],
   "moduleType": [
     "node"

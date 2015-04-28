@@ -22,9 +22,8 @@ getHomeR = do
   mfamilyId <- S.lookupSession S.FamilyId
   webSockets $ clientSocket deviceId mfamilyId
   defaultLayout $ do
-             [whamlet|<h1> To be defined |]
              addScript $ StaticR js_App_js
-             -- $(widgetFile "home")
+             $(widgetFile "home")
              -- $(widgetFile "home-js")
 
 

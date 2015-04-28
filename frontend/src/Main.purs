@@ -1,11 +1,17 @@
-module App where
+module Main where
 
+import Data.Tuple
 import qualified Data.Map as Map
 import qualified Data.Date as Date
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
 import qualified Halogen.Themes.Bootstrap3 as B
+import Halogen
+import Halogen.Component
+import Halogen.Signal
+import DOM 
+import Control.Monad.Eff
 import Data.Bifunctor
 
 
@@ -37,7 +43,7 @@ updateNavBar :: NavBar.Action -> Action
 updateNavBar act state = state { navBar = act state.navBar }
 
 navbarView :: forall p m . (Applicative m) => H.HTML p (m NavBar.Action) -> H.HTML p (m Action)
-navbarView = rmap (updateNavBar <$>)
+navbarView =  rmap (updateNavBar <$>)
 
 view :: forall p m . (Applicative m) => State -> H.HTML p (m Action)
 view state =
@@ -93,3 +99,22 @@ viewCopyrightNotice state = let currentYear = 2018 -- FIXME
                                            then show startYear ++ " - " ++ show currentYear
                                            else show startYear
                             in H.text $ "copyright by Robert Klotzner " ++ yearSpan
+
+
+ui :: forall p m . (Applicative m) => Component p m Action Action
+ui = component (view <$> stateful init update)
+  where
+    update s a = a s
+
+foreign import appendToBody
+  "function appendToBody(node) {\
+  \  return function() {\
+  \    document.body.appendChild(node);\
+  \  };\
+  \}" :: forall eff. Node -> Eff (dom :: DOM | eff) Node
+
+--main :: Eff (dom :: DOM)
+main = do
+  Tuple node driver <- runUI ui
+  appendToBody node
+  
