@@ -3,6 +3,7 @@ module BabyMonitor.Server (
                           , makeDeviceId
                           , makeFamilyId
                           , handleMessage
+                          , sendId
                           , declineInvitation
                           , acceptInvitation
                           , Server
@@ -53,6 +54,9 @@ makeClient conn' did mfid tserv = do
 makeFamilyId :: IO FamilyId
 makeFamilyId = UId.make
 
+
+sendId :: ClientInstance -> IO ()
+sendId client = void $ Client.send (YourId . devicePart . clientId $ client) client
 
 handleMessage :: ClientInstance -> Maybe FamilyId ->  LByteString -> TVar Server -> IO ()
 handleMessage client mfmly rmsg tserv = join . atomically $ do

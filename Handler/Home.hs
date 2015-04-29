@@ -33,6 +33,7 @@ clientSocket did mfid = do
   conn <- ask
   serv <- lift $ server <$> getYesod
   client <- liftIO . Server.makeClient conn did mfid $ serv
+  liftIO $ Server.sendId client
   forever $ do
     msg <- receiveData
     server <$> getYesod >>= liftIO . Server.handleMessage client mfid msg

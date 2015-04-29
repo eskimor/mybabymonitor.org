@@ -36,7 +36,7 @@ view state =
      [
        H.div [ A.class_ B.containerFluid ]
         [
-          H.div [ A.class_ B.containerFluid ]
+          H.div [ A.class_ B.navbarHeader ]
            [
              H.a [ A.class_ B.navbarBrand, A.href "#" ]
               [ H.text "mybabymonitor.org" ]

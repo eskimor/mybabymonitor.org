@@ -13,6 +13,7 @@ import Halogen.Signal
 import DOM 
 import Control.Monad.Eff
 import Data.Bifunctor
+import Data.Maybe
 
 
 import qualified Util.NavigationBar as NavBar
@@ -23,6 +24,7 @@ type State = {
     , babiesOnline :: Map.Map String String
     , babiesCount :: Number
     , serverError :: String
+    , myId :: Maybe String
     }
 
 init :: State
@@ -33,6 +35,7 @@ init =
   , babiesCount : 0
   , serverError : ""
   , inFamily : false
+  , myId : Nothing
   }
 
 
@@ -79,7 +82,7 @@ viewContent state = if (state.navBar.selected == "Baby"
                          , H.button [ A.onclick (A.input \_ -> 
                                                  updateNavBar (NavBar.selectNavigation "Family"))
                                     ]
-                            [ H.text "Grouping" ]
+                            [ H.text "Family" ]
                          ]
                     else
                         case state.navBar.selected of
@@ -104,7 +107,7 @@ viewCopyrightNotice state = let currentYear = 2018 -- FIXME
 ui :: forall p m . (Applicative m) => Component p m Action Action
 ui = component (view <$> stateful init update)
   where
-    update s a = a s
+    update = flip ($)
 
 foreign import appendToBody
   "function appendToBody(node) {\
