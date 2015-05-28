@@ -36,10 +36,23 @@ prevSlide Slide3 = Slide2
 view :: forall p m . (Applicative m) => State -> H.HTML p (m Action)
 view Slide1 =
      H.div
-      [ A.classes [neutralBg, feetBg] ]
+      [ A.classes [neutralBg, feetBg, contents] ]
       [
-        H.div [ A.class_ titleLogo ][H.text "Hello!"]
+        H.div
+         [ A.class_ titleLogo ]
+         [ H.img [ A.src "pix/logo.svg" ][] ]
+      , H.br [] []
+      , backgroundHeading H.h1 "MyBabyMonitor.org"
+      , H.br [] []
+      , backgroundHeading H.h2 "web-based baby monitor"
       ]
+
+backgroundHeading heading text =
+  H.div [ A.class_ background ]
+   [ 
+     heading [] [H.text text ]
+   ]
+
 
 viewWithBg :: forall p m . (Applicative m) => H.HTML p (m Action) -> H.HTML p (m Action)
 viewWithBg content =
