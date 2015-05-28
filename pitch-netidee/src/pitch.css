@@ -1,0 +1,57 @@
+
+
+body {
+    height: 100%;
+    width: 100%;
+    margin: 0px;
+    box-sizing: border-box;
+}
+
+.neutralBg {
+	border: 20px solid #4CCBCB;
+    background: #FFF;
+    min-height: 100%;
+    box-sizing: border-box;
+    margin: 0px;
+    z-index: -6;
+}
+
+.feetBg {
+    background-image: url('../pix/bg.png');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    z-index: -5;
+}
+
+.contents {
+    text-align: center;
+}
+.slideLogo, .titleLogo {
+    background-image: url('../pix/logo.svg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    padding: 8px;
+    border-width: 0px;
+    
+}
+
+.titleLogo {
+    position: static;
+    z-index: 4;
+    height: 166px;
+    width: 120px;
+    position: static;
+    display: block-inline;
+    
+}
+
+.slideLogo {
+    position: absolute;
+    right: 25px;
+    bottom: 25px;
+    z-index: -4;
+    height: 85px;
+    width: 64px;
+}

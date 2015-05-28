@@ -1,0 +1,23 @@
+{
+  "name": "pitch",
+  "version": "1.0.0",
+  "main": [
+    "src/Main.purs"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "output"
+  ],
+  "dependencies": {
+      "purescript-halogen": "~0.4.1"
+      , "purescript-datetime": "~0.5.2"
+      , "purescript-tuples" : "~0.3.4"
+      , "purescript-halogen-bootstrap" : "~0.1.0"
+      , "purescript-dom" : "~0.1.2"
+  }
+}
