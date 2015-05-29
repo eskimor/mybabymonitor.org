@@ -15,7 +15,7 @@ data State = Slide1 | Slide2 | Slide3
 
 
 init :: State
-init = Slide1             
+init = Slide2             
        
 -- Actions:
 
@@ -47,6 +47,11 @@ view Slide1 =
       , backgroundHeading H.h2 [A.id_ "secondTitleHeading"] "web-based baby monitor"
       ]
 
+view Slide2 = viewWithBg $ 
+              H.object [ data_ "pix/babyslidesalad.svg", A.type_ "image/svg+xml"
+                       ] []
+  
+
 backgroundHeading heading arg text =
   H.div (arg ++ [ A.class_ background ])
    [ 
@@ -57,13 +62,15 @@ backgroundHeading heading arg text =
 viewWithBg :: forall p m . (Applicative m) => H.HTML p (m Action) -> H.HTML p (m Action)
 viewWithBg content =
      H.div
-      [ A.classes [neutralBg, feetBg, contents] ]
+      [ A.classes [neutralBg, feetBg] ]
       [
         H.div [ A.class_ contents ]
         [
           content
         ]
-      , H.div [ A.class_ slideLogo ][]
+      , H.div
+         [ A.class_ slideLogo ]
+         [ H.img [ A.src "pix/logo.svg" ][] ]
       ]
 
 ui :: forall p m . (Applicative m) => Component p m Action Action
@@ -81,3 +88,7 @@ foreign import appendToBody
   \    document.body.appendChild(node);\
   \  };\
   \}" :: forall eff. Node -> Eff (dom :: DOM | eff) Node
+
+-- Until my pull request gets merged:
+data_ :: forall i. String -> A.Attr i
+data_ = A.attr $ A.attributeName "data"

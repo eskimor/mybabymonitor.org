@@ -32,6 +32,7 @@ body {
     min-height: 100%;
     box-sizing: border-box;
     margin: 0px;
+    padding: 20px;
     z-index: -6;
 }
 
@@ -47,9 +48,10 @@ body {
 
 .contents {
     text-align: center;
+    height: 100%;
 }
 
-img {
+img , object {
     height: 100%;
 }
 
@@ -76,13 +78,12 @@ h1, h2, h3, h4 {
     position: absolute;
     right: 25px;
     bottom: 25px;
-    z-index: -4;
+    z-index: 0;
     height: 85px;
-    width: 64px;
 }
 
 #secondTitleHeading {
-    margin-top: 5vh;
+    margin-top: 2vh;
     padding: 0 0.5em 0 0.5em;
     font-size: 80%;
     font-style: normal;
