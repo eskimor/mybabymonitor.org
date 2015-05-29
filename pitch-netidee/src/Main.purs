@@ -42,13 +42,13 @@ view Slide1 =
          [ A.class_ titleLogo ]
          [ H.img [ A.src "pix/logo.svg" ][] ]
       , H.br [] []
-      , backgroundHeading H.h1 "MyBabyMonitor.org"
+      , backgroundHeading H.h1 [] "MyBabyMonitor.org"
       , H.br [] []
-      , backgroundHeading H.h2 "web-based baby monitor"
+      , backgroundHeading H.h2 [A.id_ "secondTitleHeading"] "web-based baby monitor"
       ]
 
-backgroundHeading heading text =
-  H.div [ A.class_ background ]
+backgroundHeading heading arg text =
+  H.div (arg ++ [ A.class_ background ])
    [ 
      heading [] [H.text text ]
    ]

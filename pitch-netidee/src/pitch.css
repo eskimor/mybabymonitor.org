@@ -80,3 +80,10 @@ h1, h2, h3, h4 {
     height: 85px;
     width: 64px;
 }
+
+#secondTitleHeading {
+    margin-top: 5vh;
+    padding: 0 0.5em 0 0.5em;
+    font-size: 80%;
+    font-style: normal;
+}
