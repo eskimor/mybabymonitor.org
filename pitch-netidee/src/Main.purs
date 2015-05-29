@@ -12,50 +12,45 @@ import Halogen.Signal
 import Control.Monad.Eff
 import DOM
 import MyClasses
-
-data State = Slide1 | Slide2 | Slide3
-
+import Types
+import Slide1
+import Slide2
+import Slide3
+import Slide4
+import Slide5
+import Slide6
+  
 init :: State
 init = Slide1             
-       
+
 -- Actions:
-
-type Action = State -> State
-
 nextSlide :: Action
 nextSlide Slide1 = Slide2
 nextSlide Slide2 = Slide3
-nextSlide Slide3 = Slide3
+nextSlide Slide3 = Slide4
+nextSlide Slide4 = Slide5
+nextSlide Slide5 = Slide6
 
 
 prevSlide :: Action
 prevSlide Slide1 = Slide1
 prevSlide Slide2 = Slide1
 prevSlide Slide3 = Slide2
+prevSlide Slide4 = Slide3
+prevSlide Slide5 = Slide4
+prevSlide Slide6 = Slide5
 
+--
 
+view :: forall p m . (Applicative m) => State -> Slide p m
+view Slide1 = masterLayout slide1
+view Slide2 = slideLayout slide2
+view Slide3 = slideLayout slide3 
+view Slide4 = slideLayout slide4 
+view Slide5 = slideLayout slide5 
+view Slide6 = slideLayout slide6 
 
-view :: forall p m . (Applicative m) => State -> H.HTML p (m Action)
-view Slide1 = masterLayout $
-     H.div [ A.class_ contents ]
-      [
-        H.div
-         [ A.class_ titleLogo ]
-         [ H.img [ A.src "pix/logo.svg" ][] ]
-      , H.br [] []
-      , backgroundHeading H.h1 [] "MyBabyMonitor.org"
-      , H.br [] []
-      , backgroundHeading H.h2 [A.id_ "secondTitleHeading"] "web-based baby monitor"
-      ]
-
-view Slide2 = slideLayout $ 
-              H.img [ A.src "pix/babyslidesalad.svg", A.type_ "image/svg+xml"
-                       ] []
-
-view _ = masterLayout $ H.text "Nothing here!"
-
-
-masterLayout :: forall p m . (Applicative m) => H.HTML p (m Action) -> H.HTML p (m Action)
+masterLayout :: forall p m . (Applicative m) => Slide p m -> Slide p m 
 masterLayout content = 
   H.div
    [ A.classes [neutralBg, feetBg]
@@ -67,13 +62,20 @@ masterLayout content =
      content
    ]
 
+slideLayout :: forall p m . (Applicative m) => Slide p m -> Slide p m
+slideLayout content = masterLayout $
+     H.div [ A.class_ contents ]
+      [
+        content
+      , H.div
+         [ A.class_ slideLogo ]
+         [ H.img [ A.src "pix/logo.svg" ][] ]
+      ]
+
 handleMasterClick ::  forall m . (Applicative m) => A.Event A.MouseEvent -> A.EventHandler (m Action)
 handleMasterClick ev = case ev.button of
   0 -> pure (pure nextSlide) -- Primary button
-  2 -> do
-    A.preventDefault
-    A.stopImmediatePropagation
-    pure (pure prevSlide) 
+  2 -> pure (pure prevSlide) 
   1 -> pure (pure prevSlide) -- Not working
   _ -> pure (pure id)
 
@@ -84,15 +86,6 @@ handleMasterKeyPress ev = case ev.keyCode of
   _ -> id
   
   
-slideLayout :: forall p m . (Applicative m) => H.HTML p (m Action) -> H.HTML p (m Action)
-slideLayout content = masterLayout $
-     H.div [ A.class_ contents ]
-      [
-        content
-      , H.div
-         [ A.class_ slideLogo ]
-         [ H.img [ A.src "pix/logo.svg" ][] ]
-      ]
 
 ui :: forall p m . (Applicative m) => Component p m Action Action
 ui = component (view <$> stateful init update)
@@ -105,21 +98,7 @@ main = do
 
 
 
-backgroundHeading heading arg text =
-  H.div (arg ++ [ A.class_ background ])
-   [ 
-     heading [] [H.text text ]
-   ]
 
--- Until my pull request gets merged:
-data_ :: forall i. String -> A.Attr i
-data_ = A.attr $ A.attributeName "data"
-
-tabIndex :: forall i. Number -> A.Attr i
-tabIndex = A.attr (A.attributeName "tabIndex") <<< show
-
-onContextMenu :: forall i. (A.Event A.MouseEvent -> A.EventHandler i) -> A.Attr i
-onContextMenu = A.handler (A.eventName "oncontextmenu")
 --
 
 foreign import appendToBody
