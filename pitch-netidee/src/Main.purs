@@ -81,8 +81,9 @@ handleMasterClick ev = case ev.button of
 
 handleMasterKeyPress :: A.Event A.KeyboardEvent -> Action
 handleMasterKeyPress ev = case ev.keyCode of
-  37 -> prevSlide
-  39 -> nextSlide 
+  37 -> prevSlide -- arrow left
+  39 -> nextSlide -- arrow right 
+  32 -> nextSlide -- space
   _ -> id
   
   
