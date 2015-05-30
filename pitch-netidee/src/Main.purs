@@ -57,6 +57,7 @@ masterLayout content =
    , tabIndex 1
    , A.onmouseup handleMasterClick
    , A.onkeypress (A.input handleMasterKeyPress)
+   , A.attr (A.attributeName "autofocus") "true"
    ]
    [
      content
@@ -83,7 +84,7 @@ handleMasterKeyPress :: A.Event A.KeyboardEvent -> Action
 handleMasterKeyPress ev = case ev.keyCode of
   37 -> prevSlide -- arrow left
   39 -> nextSlide -- arrow right 
-  32 -> nextSlide -- space
+  0 -> nextSlide -- space
   _ -> id
   
   
