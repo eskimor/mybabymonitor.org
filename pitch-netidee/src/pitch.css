@@ -20,28 +20,30 @@
 }
 
 body {
-    height: 100%;
-    width: 100%;
     margin: 0px;
     box-sizing: border-box;
+    height: 100vh;
+    width: 100vw;
 }
 
 .neutralBg {
-	border: 20px solid #4CCBCB;
-    background: #FFF;
+    border-style: solid;
+    border-color: #4CCBCB;
+    border-width: thick;
     min-height: 100%;
+    min-weight: 100%;
     box-sizing: border-box;
     margin: 0px;
-    padding: 20px;
+    padding: 1%;
     z-index: -6;
 }
 
 .feetBg {
     background-image: url('pix/bg.png');
     background-size: cover;
+    background-clip: padding-box;
+    background-repeat: no-repeat;
     background-position: center;
-    height: 100vh;
-    width: 100vw;
     z-index: -5;
 }
 
@@ -49,6 +51,7 @@ body {
 .contents {
     text-align: center;
     height: 100%;
+    width: 100%;
 }
 
 img , object {
@@ -62,24 +65,28 @@ img , object {
     padding: 0.1em 1em 0.1em 1em;
 }
 
+.container {
+    height: 100%;
+    width: 100%;
+}
+
 h1, h2, h3, h4 {
     font-family: "Indie Flower";
 }
 
 .titleLogo {
-    position: static;
     z-index: 4;
     height: 20%;
-    margin: 5vh auto 10vh auto;
+    margin: 5% auto 10vh auto;
     display: inline-block;
 }
 
 .slideLogo {
     position: absolute;
-    right: 25px;
-    bottom: 25px;
+    right: 1%;
+    bottom: 1.5%;
     z-index: 0;
-    height: 85px;
+    height: 15%;
 }
 
 #secondTitleHeading {
