@@ -18,12 +18,12 @@ import Slide2
 
 slide3 :: forall p m . (Applicative m) => Slide p m
 slide3 =
-  H.div [A.style (A.styles (fromList [(Tuple "height" "100%")]))]
+  H.div [ A.class_ container ]
    [
      slide2
-   , H.div [ A.id_ "no-really-all" ]
+   , H.div [ A.id_ "no-really-all", A.class_ container ]
      [
-       H.div [ A.id_ "no-really-inner" ] 
+       H.div [ A.id_ "no-really-inner" , A.class_ container] 
         [
           H.img [ A.src "pix/no_really.svg", A.type_ "image/svg+xml"] []
         ]

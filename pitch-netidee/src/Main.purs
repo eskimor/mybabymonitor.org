@@ -52,16 +52,16 @@ view Slide6 = slideLayout slide6
 
 masterLayout :: forall p m . (Applicative m) => Slide p m -> Slide p m 
 masterLayout content = 
-  H.div
-   [ A.classes [neutralBg, feetBg]
-   , tabIndex 1
-   , A.onmouseup handleMasterClick
-   , A.onkeypress (A.input handleMasterKeyPress)
-   , A.attr (A.attributeName "autofocus") "true"
-   ]
-   [
-     content
-   ]
+    H.div
+    [ A.classes [neutralBg, feetBg, container]
+    , tabIndex 1
+    , A.onmouseup handleMasterClick
+    , A.onkeypress (A.input handleMasterKeyPress)
+    , A.attr (A.attributeName "autofocus") "true"
+    ]
+    [
+      content
+    ]
 
 slideLayout :: forall p m . (Applicative m) => Slide p m -> Slide p m
 slideLayout content = masterLayout $
@@ -69,7 +69,7 @@ slideLayout content = masterLayout $
       [
         content
       , H.div
-         [ A.class_ slideLogo ]
+         [ A.classes [slideLogo] ]
          [ H.img [ A.src "pix/logo.svg" ][] ]
       ]
 
