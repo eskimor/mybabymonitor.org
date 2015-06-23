@@ -1,4 +1,4 @@
-module Slide5 where
+module Slide8 where
 import Data.Tuple
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
@@ -15,5 +15,5 @@ import DOM
 import MyClasses
 import Types
 
-slide5 :: forall p m . (Applicative m) => Slide p m
-slide5 = H.img [ A.src "pix/technicalOverview.svg", A.type_ "image/svg+xml"] []
+slide8 :: forall p m . (Applicative m) => Slide p m
+slide8 = H.img [ A.src "pix/androidapps.svg", A.type_ "image/svg+xml"] []

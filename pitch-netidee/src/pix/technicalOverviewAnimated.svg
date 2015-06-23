@@ -11757,7 +11757,7 @@
      path="m 0 0 L -365 320"
      id="anMoveLaptopRabbit"
      dur="3s"
-     begin="0s"
+     begin="1s"
      fill="freeze"
      xlink:href="#laptopRabbit" />
   <animateTransform
@@ -11774,7 +11774,7 @@
      path="m 0 0 L -410 -190"
      id="anMoveTabletRabbit"
      dur="3s"
-     begin="0s"
+     begin="1s"
      fill="freeze"
      xlink:href="#tabletRabbit" />
   <animateTransform
@@ -11791,7 +11791,7 @@
      path="m 0 0 L 363 -210"
      id="anMovePCRabbit"
      dur="3s"
-     begin="0s"
+     begin="1s"
      fill="freeze"
      xlink:href="#pcRabbit" />
   <animateTransform
@@ -11808,7 +11808,7 @@
      path="m 0 0 L 396 363"
      id="anMoveMobileRabbit"
      dur="3s"
-     begin="0s"
+     begin="1s"
      fill="freeze"
      xlink:href="#mobileRabbit" />
   <animateTransform
@@ -11826,22 +11826,22 @@
      path="m 0 0 l 750 0"
      id="anMoveLaptopBaby"
      dur="2s"
-     begin="anMoveLaptopRabbit.end"
-     repeatCount="5"
+     begin="anMoveLaptopRabbit.end +1s"
+     repeatCount="3"
      xlink:href="#laptopBaby" />
   <animateMotion
      path="m 0 0 l -750 0"
      id="anMovePCBaby"
      dur="2s"
-     begin="anMovePCRabbit.end"
-     repeatCount="5"
+     begin="anMovePCRabbit.end +1s"
+     repeatCount="3"
      xlink:href="#pcBaby" />
   <animateMotion
      path="m 0 0 l 0 -550"
      id="anMoveMobileBaby"
      dur="2s"
-     begin="anMovePCBaby.end"
-     repeatCount="5"
+     begin="anMovePCBaby.end +1s"
+     repeatCount="3"
      xlink:href="#mobileBaby" />
   <animateTransform
      attributeName="transform"
@@ -11851,13 +11851,13 @@
      begin="anMoveMobileBaby.begin"
      dur="2s"
      additive="sum"
-     repeatCount="5"
+     repeatCount="3"
      xlink:href="#mobileBaby" />
   <animateMotion
      path="m 0 0 l 0 470"
      id="anMoveTabletBaby"
      dur="2s"
-     begin="anMoveLaptopBaby.end"
-     repeatCount="5"
+     begin="anMoveLaptopBaby.end +1s"
+     repeatCount="3"
      xlink:href="#tabletBaby" />
 </svg>

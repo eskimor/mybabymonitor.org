@@ -16,18 +16,4 @@ import MyClasses
 import Types
 
 slide6 :: forall p m . (Applicative m) => Slide p m
-slide6 =
-  H.div [A.style (A.styles (fromList [(Tuple "height" "100%")]))]
-   [
-     H.img [ A.src "pix/yeswecanlogos.svg", A.type_ "image/svg+xml"] []
-   , H.div [ A.class_ flexColumn, A.id_ "no-really-all" ]
-      [
-        H.div [ A.classes [centeredText] ]
-         [
-           H.div [ A.class_ background ]
-            [
-              H.h1 [] [H.text "Yes We Can!"]
-            ]
-         ]
-      ]
-   ]
+slide6 = H.img [ A.src "pix/technicalOverviewAnimated.svg", A.type_ "image/svg+xml"] []
