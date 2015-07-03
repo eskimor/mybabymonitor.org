@@ -14,8 +14,8 @@ import DOM
 import MyClasses
 import Types
 
-slide1 :: forall p m . (Monad m) => Slide p m
-slide1 =
+intro :: forall p m . (Monad m) => Slide p m
+intro =
      H.div [ A.class_ contents ]
       [
         H.div
@@ -35,14 +35,14 @@ backgroundHeading heading arg text =
    ]
 
     
-slide2 :: forall p m . (Monad m) => Slide p m 
-slide2 = H.img [ A.src "pix/babyslidesalad.svg", A.type_ "image/svg+xml"] []
+babyMonitors :: forall p m . (Monad m) => Slide p m 
+babyMonitors = H.img [ A.src "pix/babyslidesalad.svg", A.type_ "image/svg+xml"] []
 
-slide3 :: forall p m . (Monad m) => Slide p m
-slide3 =
+babyMonitorsCrossed :: forall p m . (Monad m) => Slide p m
+babyMonitorsCrossed =
   H.div [ A.class_ container ]
    [
-     slide2
+     babyMonitors
    , H.div [ A.id_ "no-really-all", A.class_ container ]
      [
        H.div [ A.id_ "no-really-inner" , A.class_ container] 
@@ -52,16 +52,57 @@ slide3 =
      ]
    ]
 
-slide4 :: forall p m . (Monad m) => Slide p m
-slide4 = H.img [ A.id_ "telecommpix", A.src "pix/telecommunications.svg", A.type_ "image/svg+xml"] []
+felix :: forall p m . (Monad m) => Slide p m
+felix = H.div [ A.id_ "felixOuter"]
+         [
+           H.div [ A.id_ "felixInner"]
+            [
+              H.img [ A.id_ "felixImg", A.src "pix/felix.jpg", A.type_ "image/jpg"] []
+            ]
+         ]
 
+every4Seconds :: forall p m . (Monad m) => Slide p m
+every4Seconds =
+  H.div [ A.id_ "every4SecondsOuter" ]
+   [
+     H.div [ A.id_ "every4SecondsInner" ]
+      [
+        H.div [] [ H.h4 [] [ H.text "Every"]]
+      , H.div [] [ H.h4 [] [ H.text "4"]]
+      , H.div [] [ H.h4 [] [ H.text "Seconds"]]
+      ]
+   ]
 
-slide5 :: forall p m . (Monad m) => Slide p m
-slide5 = H.img [ A.src "pix/technicalOverview.svg", A.type_ "image/svg+xml"] []
+aBaby :: forall p m . (Monad m) => Slide p m
+aBaby =
+  H.div [ A.id_ "every4SecondsOuter" ]
+   [
+     H.div [ A.id_ "every4SecondsInner" ]
+      [
+        H.div [] [ H.h4 [] [ H.text "A"]]
+      , H.div [] [ H.h4 [] [ H.text "Baby"]]
+      , H.div [] [ H.h4 [] [ H.text "is Born"]]
+      ]
+   ]
 
-slide6 :: forall p m . (Monad m) => Slide p m
-slide6 = H.img [ A.src "pix/technicalOverviewAnimated.svg", A.type_ "image/svg+xml"] []
+browserWebRTC :: forall p m . (Monad m) => Slide p m 
+browserWebRTC =
+  H.div [ A.id_ "felixOuter"]
+   [
+     H.div [ A.id_ "no-really-inner" ]
+      [
+        H.img [ A.id_ "browserWebRTC", A.src "pix/browserWebRTC.svg", A.type_ "image/svg+xml"] []
+      ]
+   ]
 
-
-slide8 :: forall p m . (Monad m) => Slide p m
-slide8 = H.img [ A.src "pix/androidapps.svg", A.type_ "image/svg+xml"] []
+security :: forall p m . (Monad m) => Slide p m
+security =
+  H.div [ A.id_ "every4SecondsOuter" ]
+   [
+     H.div [ A.id_ "every4SecondsInner" ]
+      [
+        H.div [] [ H.h4 [] [ H.text "Secure Invitation System"]]
+      , H.div [] [ H.h4 [] [ H.text "Encrypted"]]
+      , H.div [] [ H.h4 [] [ H.text "Peer-To-Peer"]]
+      ]
+   ]

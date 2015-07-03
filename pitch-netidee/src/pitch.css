@@ -29,7 +29,7 @@ body {
 .neutralBg {
     border-style: solid;
     border-color: #4CCBCB;
-    border-width: thick;
+    border-width: 20px;
     min-height: 100%;
     min-weight: 100%;
     box-sizing: border-box;
@@ -61,8 +61,9 @@ img , object {
 .background {
     background-color: #4CCBCB;
     display: inline-block;
-	color: white;
-    padding: 0.1em 1em 0.1em 1em;
+	  color: white;
+    padding: 0 1em 0.1em 1em;
+    margin-top: 0%;
 }
 
 .container {
@@ -83,15 +84,15 @@ h1, h2, h3, h4 {
 
 .slideLogo {
     position: absolute;
-    right: 1%;
-    bottom: 1.5%;
+    right: 22px;
+    bottom: 22px;
     z-index: 0;
     height: 15%;
 }
 
 #secondTitleHeading {
-    margin-top: 2vh;
-    padding: 0 0.5em 0 0.5em;
+    margin-top: 1vh;
+    padding: 0 0.2em 0 0.2em;
     font-size: 80%;
     font-style: normal;
 }
@@ -130,4 +131,44 @@ h1, h2, h3, h4 {
 
 #telecommpix {
     width: 100%;
+}
+
+#felixOuter {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#felixInner {
+    display: flex;
+    height: 50%;
+    width: 100%;
+    flex-direction: row;
+    justify-content: center;
+}
+
+#every4SecondsOuter {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#every4SecondsInner {
+    display: flex;
+    height: 80%;
+    width: 100%;
+    flex-direction: column;
+    justify-content: center;
+}
+
+h4 {
+    font-size: 58px;
+}
+                
+#browserWebRTC {
+    height: auto;
+    width: 60%;
 }

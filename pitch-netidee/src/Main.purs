@@ -19,8 +19,11 @@ import MyClasses
 import Types
 import Slides
 
+slides :: forall p m . (Monad m) => [Slide p m]
+slides = (<$>) slideLayout [every4Seconds, aBaby, felix, babyMonitors, babyMonitorsCrossed] <> [masterLayout intro] <> (<$>) slideLayout [browserWebRTC, security]
+
 init :: forall p m . (Monad m) => State p m
-init = State (fromArray [slide1, slide2, slide3, slide4, slide5, slide6, slide8]) Nil
+init = State (fromArray slides) Nil
 
 -- Actions:
 
@@ -40,8 +43,7 @@ prevSlide (State _ (Cons p bs)) = State p bs
 --
 
 view :: forall p m . (Monad m) => State p m -> Slide p m
-view (State (Cons s ss) Nil) = masterLayout s
-view (State (Cons s ss) _) = slideLayout s
+view (State (Cons s ss) _) = s
 
 masterLayout :: forall p m . (Monad m) => Slide p m -> Slide p m
 masterLayout content =
