@@ -1,15 +1,17 @@
 module Main where
-import Data.Tuple
 import qualified Halogen.HTML as H
 import qualified Halogen.HTML.Attributes as A
 import qualified Halogen.HTML.Events as A
 import qualified Halogen.HTML.Events.Handler as A
 import qualified Halogen.HTML.Events.Types as A
 import qualified Halogen.Themes.Bootstrap3 as B
+import Data.Tuple(Tuple(..))
 import Halogen
 import Halogen.Component
 import Halogen.Signal
 import Control.Monad.Eff
+import qualified Data.List as L
+import Data.List(List(..), fromArray)
 import DOM
 import MyClasses
 import Types
@@ -21,38 +23,23 @@ import Slide5
 import Slide6
 import Slide8
 
-init :: State
-init = Slide1
+init :: forall p m . (Applicative m) => State p m
+init = State (fromArray [slide1, slide2, slide3, slide4, slide5, slide6, slide8]) Nil
 
 -- Actions:
-nextSlide :: Action
-nextSlide Slide1 = Slide2
-nextSlide Slide2 = Slide3
-nextSlide Slide3 = Slide4
-nextSlide Slide4 = Slide5
-nextSlide Slide5 = Slide6
-nextSlide Slide6 = Slide8
+nextSlide :: forall p m . Action p m
+nextSlide o@(State (Cons _ Nil) b) = o
+nextSlide (State o@(Cons p r) b) = State r (Cons o b)
 
 
-prevSlide :: Action
-prevSlide Slide1 = Slide1
-prevSlide Slide2 = Slide1
-prevSlide Slide3 = Slide2
-prevSlide Slide4 = Slide3
-prevSlide Slide5 = Slide4
-prevSlide Slide6 = Slide5
-prevSlide Slide8 = Slide6
-
+prevSlide :: forall p m . Action p m
+prevSlide o@(State _ Nil) = o
+prevSlide (State _ (Cons p bs)) = State p bs
 --
 
-view :: forall p m . (Applicative m) => State -> Slide p m
-view Slide1 = masterLayout slide1
-view Slide2 = slideLayout slide2
-view Slide3 = slideLayout slide3
-view Slide4 = slideLayout slide4
-view Slide5 = slideLayout slide5
-view Slide6 = slideLayout slide6
-view Slide8 = slideLayout slide8
+view :: forall p m . (Applicative m) => State p m -> Slide p m
+view (State (Cons s ss) Nil) = masterLayout s
+view (State (Cons s ss) _) = slideLayout s
 
 masterLayout :: forall p m . (Applicative m) => Slide p m -> Slide p m
 masterLayout content =
@@ -77,14 +64,14 @@ slideLayout content = masterLayout $
          [ H.img [ A.src "pix/logo.svg" ][] ]
       ]
 
-handleMasterClick ::  forall m . (Applicative m) => A.Event A.MouseEvent -> A.EventHandler (m Action)
+handleMasterClick ::  forall p m . (Applicative m) => A.Event A.MouseEvent -> A.EventHandler (m (Action p m))
 handleMasterClick ev = case ev.button of
   0 -> pure (pure nextSlide) -- Primary button
   2 -> pure (pure prevSlide)
   1 -> pure (pure prevSlide) -- Not working
   _ -> pure (pure id)
 
-handleMasterKeyPress :: A.Event A.KeyboardEvent -> Action
+handleMasterKeyPress :: forall p m . A.Event A.KeyboardEvent -> Action p m
 handleMasterKeyPress ev = case ev.keyCode of
   37 -> prevSlide -- arrow left
   39 -> nextSlide -- arrow right
@@ -93,11 +80,12 @@ handleMasterKeyPress ev = case ev.keyCode of
 
 
 
-ui :: forall p m . (Applicative m) => Component p m Action Action
+ui :: forall p m . (Applicative m) => Component p m (Action p m) (Action p m)
 ui = component (view <$> stateful init update)
   where
     update = flip ($)
 
+main :: Eff (halogen :: Halogen.HalogenEffects, dom :: DOM) Unit
 main = do
      Tuple node driver <- runUI ui
      appendToBody node

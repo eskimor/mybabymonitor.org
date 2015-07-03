@@ -6,6 +6,8 @@ import qualified Halogen.HTML.Events as A
 import qualified Halogen.HTML.Events.Handler as A
 import qualified Halogen.HTML.Events.Types as A
 import qualified Halogen.Themes.Bootstrap3 as B
+import qualified Data.List as L
+import Data.List(List(..)) 
 import Halogen
 import Halogen.Component
 import Halogen.Signal
@@ -13,15 +15,14 @@ import Control.Monad.Eff
 import DOM
 import MyClasses
 
-data State = Slide1 | Slide2 | Slide3 | Slide4 | Slide5 | Slide6
-           | Slide7 | Slide8 | Slide9 | Slide10
+data State p m = State (List (Slide p m)) (List (List (Slide p m)))
 
        
 -- Actions:
 
-type Action = State -> State
+type Action p m = State p m -> State p m
 
-type Slide p m = H.HTML p (m Action)
+type Slide p m = H.HTML p (m (Action p m))
 
 -- Until my pull request gets merged:
 data_ :: forall i. String -> A.Attr i
