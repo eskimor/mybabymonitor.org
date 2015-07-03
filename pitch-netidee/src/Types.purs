@@ -12,6 +12,8 @@ import Halogen
 import Halogen.Component
 import Halogen.Signal
 import Control.Monad.Eff
+import Halogen.HTML.Events.Monad(Event(..))
+import Halogen.Internal.VirtualDOM(Widget(..))
 import DOM
 import MyClasses
 
@@ -19,10 +21,9 @@ data State p m = State (List (Slide p m)) (List (List (Slide p m)))
 
        
 -- Actions:
+data Action = NextSlide | PrevSlide | DoNothing
 
-type Action p m = State p m -> State p m
-
-type Slide p m = H.HTML p (m (Action p m))
+type Slide p m = H.HTML p (m Action)
 
 -- Until my pull request gets merged:
 data_ :: forall i. String -> A.Attr i
