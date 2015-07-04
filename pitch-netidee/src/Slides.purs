@@ -106,3 +106,27 @@ security =
       , H.div [] [ H.h4 [] [ H.text "Peer-To-Peer"]]
       ]
    ]
+
+
+sustainability1 :: forall p m . (Monad m) => Slide p m 
+sustainability1 = H.img [ A.src "pix/sustainability-1.svg", A.type_ "image/svg+xml"] []
+
+sustainability2 :: forall p m . (Monad m) => Slide p m 
+sustainability2 = H.img [ A.src "pix/sustainability-2.svg", A.type_ "image/svg+xml"] []
+
+sustainability3 :: forall p m . (Monad m) => Slide p m 
+sustainability3 = H.img [ A.src "pix/sustainability.svg", A.type_ "image/svg+xml"] []
+
+                  
+
+duringVideo :: forall p m . (Monad m) => Slide p m
+duringVideo =
+  H.div [ A.id_ "every4SecondsOuter" ]
+   [
+     H.div [ A.id_ "every4SecondsInner" ]
+      [
+        H.div [] [ H.h4 [] [ H.text "During This Video"]]
+      , H.div [] [ H.h4 [] [ H.text "30"]]
+      , H.div [] [ H.h4 [] [ H.text "Babies Were Born"]]
+      ]
+   ]
