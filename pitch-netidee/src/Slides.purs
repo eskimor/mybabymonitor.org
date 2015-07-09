@@ -79,7 +79,7 @@ aBaby =
    [
      H.div [ A.id_ "every4SecondsInner" ]
       [
-        H.span [ A.class_ listElement ] [ H.text "A"]
+        H.span [ A.class_ listElement ] [ H.text "a"]
       , H.span [ A.class_ listElement ] [ H.text "baby"]
       , H.span [ A.class_ listElement ] [ H.text "is born"]
       ]
