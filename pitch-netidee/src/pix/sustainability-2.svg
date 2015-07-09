@@ -635,10 +635,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="158.66093"
-     inkscape:cy="563.98019"
+     inkscape:cx="-17.053357"
+     inkscape:cy="529.69448"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="g5748"
      showgrid="false"
      inkscape:window-width="1598"
      inkscape:window-height="1181"
@@ -653,7 +653,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -740,11 +740,11 @@
            id="tspan5663"
            y="577.26276"
            x="872.16632"
-           sodipodi:role="line">best</tspan><tspan
+           sodipodi:role="line">most</tspan><tspan
            id="tspan5723"
            y="627.26276"
            x="872.16632"
-           sodipodi:role="line">accessibility</tspan></text>
+           sodipodi:role="line">convenient</tspan></text>
     </g>
     <g
        id="g5748"
@@ -768,7 +768,7 @@
            sodipodi:role="line"
            x="799.22052"
            y="434.41379"
-           id="tspan5673">it is free</tspan></text>
+           id="tspan5673">free</tspan></text>
     </g>
     <g
        transform="matrix(0.77745665,0,0,0.77745665,212.00555,218.37049)"

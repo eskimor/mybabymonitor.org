@@ -17,7 +17,7 @@
    id="svg5158"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="sustainability-1.svg">
+   sodipodi:docname="sustainability-hardware.svg">
   <defs
      id="defs5160">
     <linearGradient
@@ -51,17 +51,6 @@
        r="176.7767"
        gradientTransform="matrix(1.2514286,-1.0961112e-7,5.78086e-8,0.65999998,-41.277745,162.71245)"
        gradientUnits="userSpaceOnUse" />
-    <radialGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient5603"
-       id="radialGradient5641"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.2514286,-1.0961112e-7,5.78086e-8,0.65999998,-41.277745,162.71245)"
-       cx="256.57874"
-       cy="552.8418"
-       fx="256.57874"
-       fy="552.8418"
-       r="176.7767" />
     <radialGradient
        inkscape:collect="always"
        xlink:href="#linearGradient5603"
@@ -612,8 +601,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="247.50013"
-     inkscape:cy="415.09785"
+     inkscape:cx="494.64299"
+     inkscape:cy="426.52642"
      inkscape:document-units="px"
      inkscape:current-layer="g5748"
      showgrid="false"
@@ -630,7 +619,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -666,34 +655,6 @@
            y="563.62317"
            x="278.01538"
            sodipodi:role="line">baby monitor</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.77745665,0,0,0.77745665,37.119862,79.251662)"
-       id="g5649">
-      <ellipse
-         style="opacity:1;fill:url(#radialGradient5641);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-opacity:0.67692309"
-         id="ellipse5633"
-         cx="279.81226"
-         cy="527.58801"
-         rx="176.7767"
-         ry="76.266518"
-         inkscape:transform-center-x="88.893424"
-         inkscape:transform-center-y="1.0101583" />
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         x="279.59741"
-         y="517.50012"
-         id="text5635"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           x="279.59741"
-           y="517.50012"
-           id="tspan5639">works on</tspan><tspan
-           sodipodi:role="line"
-           x="279.59741"
-           y="567.50012"
-           id="tspan5647">all devices</tspan></text>
     </g>
     <g
        id="g5735"

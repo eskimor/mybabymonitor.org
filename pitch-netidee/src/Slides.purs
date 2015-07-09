@@ -67,9 +67,9 @@ every4Seconds =
    [
      H.div [ A.id_ "every4SecondsInner" ]
       [
-        H.div [] [ H.h4 [] [ H.text "Every"]]
-      , H.div [] [ H.h4 [] [ H.text "4"]]
-      , H.div [] [ H.h4 [] [ H.text "Seconds"]]
+        H.span [ A.class_ listElement ] [ H.text "Every"]
+      , H.span [ A.class_ listElement ] [ H.text "4"]
+      , H.span [ A.class_ listElement ] [ H.text "seconds"]
       ]
    ]
 
@@ -79,9 +79,9 @@ aBaby =
    [
      H.div [ A.id_ "every4SecondsInner" ]
       [
-        H.div [] [ H.h4 [] [ H.text "A"]]
-      , H.div [] [ H.h4 [] [ H.text "Baby"]]
-      , H.div [] [ H.h4 [] [ H.text "is Born"]]
+        H.span [ A.class_ listElement ] [ H.text "A"]
+      , H.span [ A.class_ listElement ] [ H.text "baby"]
+      , H.span [ A.class_ listElement ] [ H.text "is born"]
       ]
    ]
 
@@ -97,16 +97,28 @@ browserWebRTC =
 
 security :: forall p m . (Monad m) => Slide p m
 security =
-  H.div [ A.id_ "every4SecondsOuter" ]
+  H.div [ A.id_ "centeredListOuter" ]
    [
-     H.div [ A.id_ "every4SecondsInner" ]
+     H.div [ A.id_ "centeredListInner" ]
       [
-        H.div [] [ H.h4 [] [ H.text "Secure Invitation System"]]
-      , H.div [] [ H.h4 [] [ H.text "Encrypted"]]
-      , H.div [] [ H.h4 [] [ H.text "Peer-To-Peer"]]
+        H.span [ A.class_ listElement ] [ H.text "Secure Invitation System"]
+      , H.span [ A.class_ listElement ] [ H.text "Encrypted"]
+      , H.span [ A.class_ listElement ] [ H.text "Peer-To-Peer"]
       ]
    ]
 
+
+sustainabilityMostConvenient :: forall p m . (Monad m) => Slide p m 
+sustainabilityMostConvenient = H.img [ A.src "pix/sustainability-mostConvenient.svg", A.type_ "image/svg+xml"] []
+
+sustainabilityFree :: forall p m . (Monad m) => Slide p m 
+sustainabilityFree = H.img [ A.src "pix/sustainability-free.svg", A.type_ "image/svg+xml"] []
+
+sustainabilityBest :: forall p m . (Monad m) => Slide p m 
+sustainabilityBest = H.img [ A.src "pix/sustainability-best.svg", A.type_ "image/svg+xml"] []
+
+sustainabilityHardware :: forall p m . (Monad m) => Slide p m 
+sustainabilityHardware = H.img [ A.src "pix/sustainability-hardware.svg", A.type_ "image/svg+xml"] []
 
 sustainability1 :: forall p m . (Monad m) => Slide p m 
 sustainability1 = H.img [ A.src "pix/sustainability-1.svg", A.type_ "image/svg+xml"] []
@@ -117,6 +129,8 @@ sustainability2 = H.img [ A.src "pix/sustainability-2.svg", A.type_ "image/svg+x
 sustainability3 :: forall p m . (Monad m) => Slide p m 
 sustainability3 = H.img [ A.src "pix/sustainability.svg", A.type_ "image/svg+xml"] []
 
+androidApps :: forall p m . (Monad m) => Slide p m 
+androidApps = H.img [ A.src "pix/androidapps.svg", A.type_ "image/svg+xml"] []
                   
 
 duringVideo :: forall p m . (Monad m) => Slide p m
@@ -125,8 +139,8 @@ duringVideo =
    [
      H.div [ A.id_ "every4SecondsInner" ]
       [
-        H.div [] [ H.h4 [] [ H.text "During This Video"]]
-      , H.div [] [ H.h4 [] [ H.text "30"]]
-      , H.div [] [ H.h4 [] [ H.text "Babies Were Born"]]
+        H.span [ A.class_ listElement ] [ H.text "During this video"]
+      , H.span [ A.class_ listElement ] [ H.text "30"]
+      , H.span [ A.class_ listElement ] [ H.text "babies were born"]
       ]
    ]

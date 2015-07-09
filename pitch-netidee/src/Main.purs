@@ -22,7 +22,7 @@ import Slides
 slides :: forall p m . (Monad m) => [Slide p m]
 slides = (<$>) slideLayout [every4Seconds, aBaby, felix, babyMonitors, babyMonitorsCrossed]
          <> [masterLayout intro]
-         <> (<$>) slideLayout [browserWebRTC, security, sustainability1, sustainability2, sustainability3, duringVideo]
+         <> (<$>) slideLayout [browserWebRTC, security, sustainabilityMostConvenient, sustainabilityFree, sustainabilityBest, sustainabilityHardware, sustainability1, sustainability2, sustainability3, androidApps, duringVideo]
 
 init :: forall p m . (Monad m) => State p m
 init = State (fromArray slides) Nil

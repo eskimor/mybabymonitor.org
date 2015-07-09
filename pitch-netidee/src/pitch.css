@@ -158,15 +158,34 @@ h1, h2, h3, h4 {
 
 #every4SecondsInner {
     display: flex;
-    height: 80%;
+    height: 60%;
     width: 100%;
     flex-direction: column;
     justify-content: center;
 }
 
-h4 {
-    font-size: 58px;
+#centeredListOuter {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
 }
+
+#centeredListInner {
+    display: flex;
+    height: 80%;
+    width: 100%;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.listElement {
+    font-size: 58px;
+    font-weight: bold;
+    display: box;
+    font-family: "Indie Flower";
+}
+
                 
 #browserWebRTC {
     height: auto;

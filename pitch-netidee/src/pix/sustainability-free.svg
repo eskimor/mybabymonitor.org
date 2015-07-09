@@ -17,7 +17,7 @@
    id="svg5158"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="sustainability-1.svg">
+   sodipodi:docname="sustainability-free.svg">
   <defs
      id="defs5160">
     <linearGradient
@@ -40,28 +40,6 @@
          offset="0"
          id="stop5597" />
     </linearGradient>
-    <radialGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient5603"
-       id="radialGradient5617"
-       cx="256.57874"
-       cy="552.8418"
-       fx="256.57874"
-       fy="552.8418"
-       r="176.7767"
-       gradientTransform="matrix(1.2514286,-1.0961112e-7,5.78086e-8,0.65999998,-41.277745,162.71245)"
-       gradientUnits="userSpaceOnUse" />
-    <radialGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient5603"
-       id="radialGradient5641"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.2514286,-1.0961112e-7,5.78086e-8,0.65999998,-41.277745,162.71245)"
-       cx="256.57874"
-       cy="552.8418"
-       fx="256.57874"
-       fy="552.8418"
-       r="176.7767" />
     <radialGradient
        inkscape:collect="always"
        xlink:href="#linearGradient5603"
@@ -592,17 +570,6 @@
         </g>
       </g>
     </clipPath>
-    <radialGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient5603"
-       id="radialGradient6300"
-       gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.2514286,-1.0961112e-7,5.78086e-8,0.65999998,550.38249,214.65832)"
-       cx="256.57874"
-       cy="552.8418"
-       fx="256.57874"
-       fy="552.8418"
-       r="176.7767" />
   </defs>
   <sodipodi:namedview
      id="base"
@@ -612,10 +579,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.7"
-     inkscape:cx="247.50013"
-     inkscape:cy="415.09785"
+     inkscape:cx="97.500133"
+     inkscape:cy="426.52642"
      inkscape:document-units="px"
-     inkscape:current-layer="g5748"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1598"
      inkscape:window-height="1181"
@@ -639,62 +606,6 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-308.26772)">
-    <g
-       id="g5625"
-       transform="matrix(0.77745665,0,0,0.77745665,302.1816,19.626393)">
-      <ellipse
-         inkscape:transform-center-y="1.0101583"
-         inkscape:transform-center-x="88.893424"
-         ry="76.266518"
-         rx="176.7767"
-         cy="527.58801"
-         cx="279.81226"
-         id="path4141"
-         style="opacity:1;fill:url(#radialGradient5617);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-opacity:0.67692309" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text5619"
-         y="513.62317"
-         x="278.01538"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           y="513.62317"
-           x="278.01538"
-           id="tspan5621"
-           sodipodi:role="line">best free</tspan><tspan
-           id="tspan5623"
-           y="563.62317"
-           x="278.01538"
-           sodipodi:role="line">baby monitor</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.77745665,0,0,0.77745665,37.119862,79.251662)"
-       id="g5649">
-      <ellipse
-         style="opacity:1;fill:url(#radialGradient5641);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-opacity:0.67692309"
-         id="ellipse5633"
-         cx="279.81226"
-         cy="527.58801"
-         rx="176.7767"
-         ry="76.266518"
-         inkscape:transform-center-x="88.893424"
-         inkscape:transform-center-y="1.0101583" />
-      <text
-         xml:space="preserve"
-         style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         x="279.59741"
-         y="517.50012"
-         id="text5635"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           x="279.59741"
-           y="517.50012"
-           id="tspan5639">works on</tspan><tspan
-           sodipodi:role="line"
-           x="279.59741"
-           y="567.50012"
-           id="tspan5647">all devices</tspan></text>
-    </g>
     <g
        id="g5735"
        transform="matrix(0.77745665,0,0,0.77745665,101.12156,29.774641)">
@@ -746,46 +657,6 @@
            x="799.22052"
            y="434.41379"
            id="tspan5673">free</tspan></text>
-    </g>
-    <g
-       transform="matrix(0.77745665,0,0,0.77745665,212.00555,218.37049)"
-       id="g6290">
-      <g
-         id="g6314"
-         transform="translate(-3.897912,-57.169377)">
-        <ellipse
-           inkscape:transform-center-y="1.0101583"
-           inkscape:transform-center-x="88.893424"
-           ry="76.266518"
-           rx="176.7767"
-           cy="579.53387"
-           cx="871.47247"
-           id="ellipse6292"
-           style="opacity:1;fill:url(#radialGradient6300);fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-opacity:0.67692309" />
-        <text
-           sodipodi:linespacing="125%"
-           id="text6294"
-           y="544.44598"
-           x="872.08771"
-           style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-           xml:space="preserve"><tspan
-             id="tspan6304"
-             y="544.44598"
-             x="872.08771"
-             sodipodi:role="line">on par with</tspan><tspan
-             id="tspan6310"
-             y="594.44598"
-             x="872.08771"
-             sodipodi:role="line">hardware</tspan><tspan
-             id="tspan6312"
-             y="644.44598"
-             x="872.08771"
-             sodipodi:role="line">devices</tspan><tspan
-             id="tspan6298"
-             y="694.44598"
-             x="872.08771"
-             sodipodi:role="line" /></text>
-      </g>
     </g>
   </g>
 </svg>
