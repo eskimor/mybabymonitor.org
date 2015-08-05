@@ -1,6 +1,6 @@
 <div id=#{intro}>
     This early test version of a web-based baby monitor only works with a recent
-    version of <span style="color:red;"> Mozilla Firefox</span>.
+    version of <a href="https://www.mozilla.org/en-US/firefox/new/?scene=2#download-fx" style="color:red;"> Mozilla Firefox</a>.
     <br>
     <br>
     It is designed for usual private home networks. So if you have a WiFi router
